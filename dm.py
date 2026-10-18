@@ -21,4 +21,6 @@ while True:
             print("Invalid choice. Please select 1, 2, or 3.")
             continue
 
-print(f"The genre of this campaign is {genre}.")
+name = input("What is your name, adventurer? ")
+
+print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
