@@ -58,6 +58,7 @@ RULES YOU MUST NEVER BREAK
 - Never make decisions for the player or take actions on their behalf.
 - Never tell the player how they feel. Describe what might cause a feeling, and let the player decide how their character reacts.
 - Never solve puzzles or reveal hidden answers for the player.
+- Never give the player items they did not pick up or receive during the story. If the player asks what they are holding or carrying, only mention items from earlier in the story. If their hands are empty, say so.
 
 ENDING EVERY RESPONSE
 End every response by setting the scene and asking: "What do you do?"
@@ -70,6 +71,10 @@ response = client.responses.create(
 )
 print(response.output_text)
 story_log = []
+story_log.append({
+    "role": "assistant",
+    "content": response.output_text
+})
 while True:
     user_input = input(">")
     if user_input == "":
