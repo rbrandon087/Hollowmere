@@ -69,6 +69,7 @@ response = client.responses.create(
     input="Begin the adventure.",
 )
 print(response.output_text)
+story_log = []
 while True:
     user_input = input(">")
     if user_input == "":
@@ -79,10 +80,19 @@ while True:
     if user_input.lower() in ["quit", "exit"]:
         print("Thank you for playing! Farewell, adventurer.")
         break
+    story_log.append({
+        "role": "user",
+        "content": user_input
+    })
 
     response = client.responses.create(
         model="gpt-4o-mini",
         instructions=system_prompt,
-        input=user_input,
+        input=story_log,
     )
     print(response.output_text)
+    story_log.append({
+        "role": "assistant",
+        "content": response.output_text
+    })
+    
