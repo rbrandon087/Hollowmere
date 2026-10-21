@@ -1,11 +1,16 @@
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+import psycopg
 
 load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
+database_url = os.getenv("DATABASE_URL")
 client = OpenAI(api_key=openai_api_key)
+
+with psycopg.connect(database_url) as conn:
+     print("Connected to the database!")
 
 
 print("Hollowmere: The Narrator Awakens")
