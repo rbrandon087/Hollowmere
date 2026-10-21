@@ -9,8 +9,12 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 database_url = os.getenv("DATABASE_URL")
 client = OpenAI(api_key=openai_api_key)
 
-with psycopg.connect(database_url) as conn:
-     print("Connected to the database!")
+conn = psycopg.connect(database_url, autocommit=True)
+
+print("Connected to the database!")
+
+player_id = conn.execute("INSERT INTO players DEFAULT VALUES RETURNING id").fetchone()[0]
+print(f"Player created with ID {player_id}")
 
 
 print("Hollowmere: The Narrator Awakens")
@@ -37,6 +41,8 @@ while True:
             continue
 
 name = input("What is your name, adventurer? ")
+campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre) VALUES (%s, %s, %s) RETURNING id;", (player_id, name, genre)).fetchone()[0]
+print(campaign_id)
 
 print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
