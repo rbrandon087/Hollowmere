@@ -1,33 +1,47 @@
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-import psycopg
+# ============================================================
+# Hollowmere: The Narrator Awakens
+# An AI Dungeon Master text adventure
+# ============================================================
 
-load_dotenv()
+# ---------- Imports ----------
+import os                       # lets us read environment variables (our secret keys)
+from openai import OpenAI       # the OpenAI library, so we can talk to the AI
+from dotenv import load_dotenv  # reads our .env file so os.getenv can find the keys
+import psycopg                  # lets Python talk to our Postgres database
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-database_url = os.getenv("DATABASE_URL")
-client = OpenAI(api_key=openai_api_key)
+# ---------- Setup: keys and connections ----------
+load_dotenv()  # load the secret values from .env into the environment
 
+openai_api_key = os.getenv("OPENAI_API_KEY")  # grab the OpenAI key from .env
+database_url = os.getenv("DATABASE_URL")      # grab the database address from .env
+client = OpenAI(api_key=openai_api_key)       # create the OpenAI client we'll send requests through
+
+# Connect to the Render Postgres database.
+# autocommit=True means every INSERT saves right away (no separate "commit" step needed).
 conn = psycopg.connect(database_url, autocommit=True)
 
 print("Connected to the database!")
 
+# Create a new player row.
+# DEFAULT VALUES = let the database fill in id and created_at by itself.
+# RETURNING id = hand back the new player's id.
+# .fetchone()[0] = grab that first row, then the first value in it (the id number).
 player_id = conn.execute("INSERT INTO players DEFAULT VALUES RETURNING id").fetchone()[0]
 print(f"Player created with ID {player_id}")
 
 
+# ---------- Genre menu ----------
 print("Hollowmere: The Narrator Awakens")
-while True:
+while True:  # keep showing the menu until the player picks a valid option
         print("1. Horror")
         print("2. Fantasy")
         print("3. Horror and Fantasy")
-        choice = input("Choose a genre (1, 2, or 3): ")
+        choice = input("Choose a genre (1, 2, or 3): ")  # input() always gives back a string
 
         if choice == "1":
             genre = "Horror"
             print("Welcome to the world of horror! Prepare to be scared.")
-            break
+            break     # valid choice, so leave the menu loop
         elif choice == "2":
             genre = "Fantasy"
             print("Welcome to the world of fantasy! Get ready for an epic adventure.")
@@ -38,14 +52,23 @@ while True:
             break
         else:
             print("Invalid choice. Please select 1, 2, or 3.")
-            continue
+            continue  # bad choice, so jump back to the top of the loop and show the menu again
 
+# ---------- Character name + save the campaign ----------
 name = input("What is your name, adventurer? ")
+
+# Save a new campaign row linked to this player.
+# Each %s is a safe placeholder. The tuple fills them in, in order:
+#   player_id -> player_id, name -> character_name, genre -> genre
+# RETURNING id gives back the campaign's id, because the turns table needs to point to it.
 campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre) VALUES (%s, %s, %s) RETURNING id;", (player_id, name, genre)).fetchone()[0]
 print(campaign_id)
 
 print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
+# ---------- The DM's instructions (system prompt) ----------
+# f""" ... """ is a multi-line f-string, so {name} and {genre} get filled in with the player's choices.
+# This tells the AI how to behave as the Dungeon Master every single turn.
 system_prompt = f"""You are the Dungeon Master, the narrator and guide of an immersive tabletop-style adventure. You control the world, its places, its creatures, and every character the player meets. The player controls only their own character.
 
 The player's character is named {name}.
@@ -75,40 +98,64 @@ ENDING EVERY RESPONSE
 End every response by setting the scene and asking: "What do you do?"
 """
 
+# ---------- Opening scene ----------
+# Ask the AI to start the story.
+# instructions = the DM rules above. input = a behind-the-scenes nudge (not saved as part of the story).
 response = client.responses.create(
     model="gpt-4o-mini",
     instructions=system_prompt,
     input="Begin the adventure.",
 )
-print(response.output_text)
+print(response.output_text)  # show the DM's opening scene to the player
+
+# The story log is the DM's memory: a list of dictionaries, one per line of the story.
+# Each dictionary has a "role" (who spoke) and "content" (what they said).
 story_log = []
 story_log.append({
-    "role": "assistant",
-    "content": response.output_text
+    "role": "assistant",                # "assistant" = the DM
+    "content": response.output_text     # the opening scene text
 })
-while True:
-    user_input = input(">")
+
+# Save the opening scene to the turns table.
+# No RETURNING id here, because nothing else points to a turn.
+# Quotes vs. no quotes: "assistant" is the literal word; campaign_id and response.output_text are variables.
+conn.execute(
+    "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+    (campaign_id, "assistant", response.output_text),
+)
+
+# ---------- Main game loop ----------
+while True:  # keep the game going until the player quits
+    user_input = input(">")  # wait for the player to type an action or question
+
     if user_input == "":
-         continue
+         continue  # player just pressed Enter, so ignore it and ask again
+
     if user_input == "help":
         print("Type your actions or questions to interact with the world. Type 'quit' to exit.")
-        continue
+        continue  # show help, then go back to waiting for input
+
+    # .lower() makes "QUIT" or "Quit" count too
     if user_input.lower() in ["quit", "exit"]:
         print("Thank you for playing! Farewell, adventurer.")
-        break
+        break  # leave the game loop, which ends the program
+
+    # Add the player's move to the story log
     story_log.append({
-        "role": "user",
-        "content": user_input
+        "role": "user",           # "user" = the player
+        "content": user_input     # what the player typed
     })
 
+    # Send the WHOLE story log to the AI, so the DM remembers everything that happened so far
     response = client.responses.create(
         model="gpt-4o-mini",
         instructions=system_prompt,
         input=story_log,
     )
-    print(response.output_text)
+    print(response.output_text)  # show the DM's reply
+
+    # Add the DM's reply to the story log, so it's remembered next turn
     story_log.append({
         "role": "assistant",
         "content": response.output_text
     })
-    
