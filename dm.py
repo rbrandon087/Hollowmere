@@ -145,6 +145,12 @@ while True:  # keep the game going until the player quits
         "role": "user",           # "user" = the player
         "content": user_input     # what the player typed
     })
+    # 
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "user", user_input),
+    )
+
 
     # Send the WHOLE story log to the AI, so the DM remembers everything that happened so far
     response = client.responses.create(
@@ -159,3 +165,7 @@ while True:  # keep the game going until the player quits
         "role": "assistant",
         "content": response.output_text
     })
+    conn.execute(
+            "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+            (campaign_id, "assistant", response.output_text),
+    )
