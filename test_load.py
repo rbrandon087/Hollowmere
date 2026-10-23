@@ -14,7 +14,7 @@ print("Connected to the database!")
 
 rows = conn.execute(
     "SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
-    (5,),
+    (campaign_id,),
 ).fetchall()
 
 story_log = []

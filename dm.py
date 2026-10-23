@@ -32,7 +32,21 @@ print(f"Player created with ID {player_id}")
 
 # ---------- Genre menu ----------
 print("Hollowmere: The Narrator Awakens")
-while True:  # keep showing the menu until the player picks a valid option
+# Show the main menu for starting or loading an adventure
+while True:
+    print("1. New Adventure")
+    print("2. Load Adventure")
+    option_choice = input("Choose an option (1 or 2):")
+    if option_choice == "1":
+        break  # start a new adventure
+    elif option_choice == "2":
+        # Load an existing adventure
+        break  # exit the main menu loop even though loading isn't implemented
+    else:
+        print("Invalid choice. Please select 1 or 2.")
+        continue  # go back to the top of the menu loop
+if option_choice == "1": # the new adventure option
+    while True:  # keep showing the menu until the player picks a valid option
         print("1. Horror")
         print("2. Fantasy")
         print("3. Horror and Fantasy")
@@ -53,18 +67,33 @@ while True:  # keep showing the menu until the player picks a valid option
         else:
             print("Invalid choice. Please select 1, 2, or 3.")
             continue  # bad choice, so jump back to the top of the loop and show the menu again
+    name = input("What is your name, adventurer? ")
+    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre) VALUES (%s, %s, %s) RETURNING id;", (player_id, name, genre)).fetchone()[0]
+    print(campaign_id)
+    print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
-# ---------- Character name + save the campaign ----------
-name = input("What is your name, adventurer? ")
+else: # the load existing adventure option
+    # Here you would implement loading an existing campaign
+    existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")
+    for row in existing_campaigns:
+        print(f"{row[0]}. {row[1]} ({row[2]})")
+    campaign_id = int(input("Enter the ID of the campaign you want to load: "))
+    campaign = conn.execute("SELECT character_name, genre FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
+    name = campaign[0]
+    genre = campaign[1]
+    rows = conn.execute("SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
+        (campaign_id,),
+    ).fetchall()
 
-# Save a new campaign row linked to this player.
-# Each %s is a safe placeholder. The tuple fills them in, in order:
-#   player_id -> player_id, name -> character_name, genre -> genre
-# RETURNING id gives back the campaign's id, because the turns table needs to point to it.
-campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre) VALUES (%s, %s, %s) RETURNING id;", (player_id, name, genre)).fetchone()[0]
-print(campaign_id)
+    story_log = []
 
-print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
+    for row in rows:
+        story_log.append({
+            "role": row[0],
+            "content": row[1]
+        })
+    print(story_log)
+    
 
 # ---------- The DM's instructions (system prompt) ----------
 # f""" ... """ is a multi-line f-string, so {name} and {genre} get filled in with the player's choices.
@@ -101,28 +130,29 @@ End every response by setting the scene and asking: "What do you do?"
 # ---------- Opening scene ----------
 # Ask the AI to start the story.
 # instructions = the DM rules above. input = a behind-the-scenes nudge (not saved as part of the story).
-response = client.responses.create(
-    model="gpt-4o-mini",
-    instructions=system_prompt,
-    input="Begin the adventure.",
-)
-print(response.output_text)  # show the DM's opening scene to the player
+if option_choice == "1":
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        instructions=system_prompt,
+        input="Begin the adventure.",
+    )
+    print(response.output_text)  # show the DM's opening scene to the player
 
-# The story log is the DM's memory: a list of dictionaries, one per line of the story.
-# Each dictionary has a "role" (who spoke) and "content" (what they said).
-story_log = []
-story_log.append({
-    "role": "assistant",                # "assistant" = the DM
-    "content": response.output_text     # the opening scene text
-})
+    # The story log is the DM's memory: a list of dictionaries, one per line of the story.
+    # Each dictionary has a "role" (who spoke) and "content" (what they said).
+    story_log = []
+    story_log.append({
+        "role": "assistant",                # "assistant" = the DM
+        "content": response.output_text     # the opening scene text
+    })
 
-# Save the opening scene to the turns table.
-# No RETURNING id here, because nothing else points to a turn.
-# Quotes vs. no quotes: "assistant" is the literal word; campaign_id and response.output_text are variables.
-conn.execute(
-    "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
-    (campaign_id, "assistant", response.output_text),
-)
+    # Save the opening scene to the turns table.
+    # No RETURNING id here, because nothing else points to a turn.
+    # Quotes vs. no quotes: "assistant" is the literal word; campaign_id and response.output_text are variables.
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "assistant", response.output_text),
+    )
 
 # ---------- Main game loop ----------
 while True:  # keep the game going until the player quits
