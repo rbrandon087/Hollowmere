@@ -92,7 +92,7 @@ else: # the load existing adventure option
             "role": row[0],
             "content": row[1]
         })
-    print(story_log)
+    print(story_log[-1]["content"])
     
 
 # ---------- The DM's instructions (system prompt) ----------
@@ -195,6 +195,7 @@ while True:  # keep the game going until the player quits
         "role": "assistant",
         "content": response.output_text
     })
+    print(story_log[-1]["content"])
     conn.execute(
             "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
             (campaign_id, "assistant", response.output_text),
