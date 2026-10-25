@@ -175,7 +175,7 @@ BEFORE YOU SEND EACH RESPONSE, CHECK:
 # instructions = the DM rules above. input = a behind-the-scenes nudge (not saved as part of the story).
 if option_choice == "1":
     response = client.responses.create(
-        model="gpt-4o-mini",
+        model="gpt-6-luna",
         instructions=system_prompt,
         input="Begin the adventure.",
     )
@@ -237,7 +237,7 @@ while True:  # keep the game going until the player quits
 
     # Send the WHOLE story log to the AI, so the DM remembers everything that happened so far
     response = client.responses.create(
-        model="gpt-4o-mini",
+        model="gpt-6-luna",
         instructions=system_prompt,
         input=story_log,
     )
