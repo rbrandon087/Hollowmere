@@ -109,11 +109,19 @@ else: # the load existing adventure option
     for row in existing_campaigns:
         print(f"{row[0]}. {row[1]} ({row[2]})")
     campaign_id = int(input("Enter the ID of the campaign you want to load: "))
-    campaign = conn.execute("SELECT character_name, genre, race_id, class_id FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
+    campaign = conn.execute("SELECT character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
     name = campaign[0]
     genre = campaign[1]
+    # Retrieve the character's race and class choices from the campaign record.
     race_choice = campaign[2]
     class_choice = campaign[3]
+    # Retrieve the character's ability scores from the campaign record.
+    strength = campaign[4]
+    dexterity = campaign[5]
+    constitution = campaign[6]
+    intelligence = campaign[7]
+    wisdom = campaign[8]
+    charisma = campaign[9]
     race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
     rows = conn.execute("SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
@@ -135,7 +143,15 @@ else: # the load existing adventure option
 # This tells the AI how to behave as the Dungeon Master every single turn.
 system_prompt = f"""You are the Dungeon Master, the narrator and guide of an immersive tabletop-style adventure. You control the world, its places, its creatures, and every character the player meets. The player controls only their own character.
 
-The player's character is {name}, a {race} {class_name}.
+The player's character is {name}, a {race} {class_name}. 
+Their ability scores are:
+- Strength: {strength}
+- Dexterity: {dexterity}
+- Constitution: {constitution}
+- Intelligence: {intelligence}
+- Wisdom: {wisdom}
+- Charisma: {charisma}
+10 is average for a person. Higher scores make related actions easier and lower scores make them harder. Let these scores shape how the world describes their efforts and how you read their rolls.
 Let their race and class shape how the world reacts to them, and what they can see, sense, and do.
 
 GENRE
