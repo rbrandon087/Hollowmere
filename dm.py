@@ -25,6 +25,11 @@ conn = psycopg.connect(database_url, autocommit=True)
 # ---------- Dice ----------
 def roll_die(sides):
     return random.randint(1, sides)
+# Roll 4d6 and drop the lowest die to generate an ability score.
+def roll_ability_score():
+    rolls = [roll_die(6), roll_die(6), roll_die(6), roll_die(6)]
+    score = sum(rolls) - min(rolls)
+    return score
 
 print("Connected to the database!")
 
@@ -85,9 +90,16 @@ if option_choice == "1": # the new adventure option
         print(f"{row[0]}. {row[1]} ({row[2]} - Hit Die: {row[3]})")
     class_choice = int(input("Choose your class adventurer by entering the corresponding number: "))
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
-    
+    strength = roll_ability_score()
+    dexterity = roll_ability_score()
+    constitution = roll_ability_score()
+    intelligence = roll_ability_score()
+    wisdom = roll_ability_score()
+    charisma = roll_ability_score()
+    print(f"Your ability scores are:\nStrength: {strength}\nDexterity: {dexterity}\nConstitution: {constitution}\nIntelligence: {intelligence}\nWisdom: {wisdom}\nCharisma: {charisma}")
     name = input("What is your name, adventurer? ")
-    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id) VALUES (%s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice)).fetchone()[0]
+    # Insert the new campaign into the database with the player's chosen character details and ability scores.
+    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice, strength, dexterity, constitution, intelligence, wisdom, charisma)).fetchone()[0]
     print(campaign_id)
     print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
