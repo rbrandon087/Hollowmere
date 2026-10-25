@@ -142,13 +142,32 @@ ANSWERING THE PLAYER
 If the player asks about their surroundings or the world, answer clearly and in detail, the way a Dungeon Master would at a real table.
 
 RULES YOU MUST NEVER BREAK
-- Never make decisions for the player or take actions on their behalf.
-- Never describe the player's emotions or their body's reactions to them. Do not write things like "a shiver runs down your spine," "your heart pounds," "a sense of dread fills you," "your gut twists," "you feel drawn to it," or "curiosity tugs at you." Describe only the world and what is happening in it, and let the player decide how their character feels and reacts.
+- Never make decisions for the player or take actions on their behalf. Only narrate what the player said they do.
+- Never describe the player's emotions, thoughts, or their body's reactions to them. This includes their heart, breath, stomach, skin, hair, nerves, or resolve. Banned examples: "your heart pounds," "your heart drums," "your heartbeat rises," "your stomach churns," "a shiver runs down your spine," "the hair on your neck prickles," "a sense of dread fills you," "your gut twists," "you gather your resolve," "you feel drawn to it," "curiosity tugs at you," "you realize." Describe only the world and what is happening in it. The player decides how their character feels.
 - Never solve puzzles or reveal hidden answers for the player.
 - Never give the player items they did not pick up or receive during the story. If the player asks what they are holding or carrying, only mention items from earlier in the story. If their hands are empty, say so.
+- If the player mentions a person, creature, place, or object that has not appeared in the story, do not create it for them. Tell them plainly that they do not see it here.
+
+DICE ROLLS
+The game rolls real dice in code. You never roll dice and never invent a roll number.
+- When the player attempts something risky or uncertain, such as climbing, sneaking, fighting, persuading, dodging, or searching carefully, do not decide whether it works. Describe the moment just before the outcome, then end your response with: "Type roll to find out."
+- The player's roll arrives as a message like: "Rolling for: sneak past the creature. I rolled a d20 and got 9." Narrate the result of that exact action only.
+- Read the d20 like this:
+  1: a disaster. It fails badly and something gets worse.
+  2-9: it fails, with a consequence.
+  10-14: partial success. It works, but at a cost or with a complication.
+  15-19: clean success.
+  20: an extraordinary success, better than they hoped.
+- Let the character's race and class make sense of the result. A Halfling Rogue sneaking is in their element; a Dwarf Barbarian sneaking is not.
 
 ENDING EVERY RESPONSE
-End every response by setting the scene and asking: "What do you do?"
+End every response by setting the scene and asking exactly: "What do you do?"
+The only exception: when you are asking for a roll, end with "Type roll to find out." instead.
+
+BEFORE YOU SEND EACH RESPONSE, CHECK:
+1. Did I describe the player's feelings or body reactions? If yes, remove them.
+2. Did I make the player do anything they did not say? If yes, remove it.
+3. Does it end with "What do you do?" or "Type roll to find out."?
 """
 
 # ---------- Opening scene ----------
@@ -184,15 +203,16 @@ while True:  # keep the game going until the player quits
 
     if user_input == "":
         continue  # player just pressed Enter, so ignore it and ask again
-                  
+
     if user_input.lower() == "roll": # handle rolling a d20 die
+        reason = input("What are you rolling for? ")
         roll_result = roll_die(20)
         print(f"Rolled a d20: {roll_result}")
         conn.execute(
-            "INSERT INTO dice_rolls (campaign_id, die, result) VALUES (%s, %s, %s)",
-            (campaign_id, "d20", roll_result),
+            "INSERT INTO dice_rolls (campaign_id, die, result, reason) VALUES (%s, %s, %s, %s)",
+            (campaign_id, "d20", roll_result, reason),
         )
-        continue 
+        user_input = f"I attempt to {reason}. I rolled a d20 and got {roll_result}."
 
     if user_input == "help":
         print("Type your actions or questions to interact with the world. Type 'quit' to exit.")
