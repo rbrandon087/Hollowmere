@@ -31,6 +31,25 @@ def roll_ability_score():
     score = sum(rolls) - min(rolls)
     return score
 
+# ---------- Starting Equipment ----------
+starting_equipment = {
+    "Barbarian": ["greataxe", "handaxe", "explorer's pack", "javelin"],
+    "Wizard": ["quarterstaff", "component pouch", "spellbook", "scholar's pack"],
+    "Rogue": ["shortsword", "dagger", "thieves' tools", "burglar's pack"],
+    "Cleric": ["mace", "shield", "holy symbol", "priest's pack"],
+    "Fighter": ["longsword", "shield", "chain mail", "dungeoneer's pack"],
+    "Paladin": ["longsword", "shield", "chain mail", "priest's pack"],
+    "Ranger": ["longbow", "shortsword", "explorer's pack", "quiver of arrows"],
+    "Monk": ["quarterstaff", "dungeoneer's pack", "shortsword", "10 darts"],
+    "Bard": ["rapier", "lute", "explorer's pack", "dagger"],
+    "Druid": ["scimitar", "shield", "explorer's pack", "druidic focus"],
+    "Warlock": ["light crossbow", "component pouch", "explorer's pack", "dagger"],
+    "Sorcerer": ["dagger", "component pouch", "explorer's pack", "arcane focus"],
+    "Artificer": ["light crossbow", "thieves' tools", "explorer's pack", "dagger"],
+                
+            }
+
+
 print("Connected to the database!")
 
 # Create a new player row.
@@ -100,6 +119,11 @@ if option_choice == "1": # the new adventure option
     name = input("What is your name, adventurer? ")
     # Insert the new campaign into the database with the player's chosen character details and ability scores.
     campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice, strength, dexterity, constitution, intelligence, wisdom, charisma)).fetchone()[0]
+    # Assign starting equipment based on the chosen class.
+    items = starting_equipment[class_name]
+    print(f"Your starting equipment includes: {', '.join(items)}")
+    for item in items:
+        conn.execute("INSERT INTO equipment (campaign_id, item_name, quantity) VALUES (%s, %s, %s);", (campaign_id, item, 1)) # Insert each starting equipment item into the database for the new campaign.
     print(campaign_id)
     print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
@@ -241,7 +265,7 @@ while True:  # keep the game going until the player quits
             (campaign_id, "d20", roll_result, reason),
         )
         user_input = f"I attempt to {reason}. I rolled a d20 and got {roll_result}."
-
+        
     if user_input == "help":
         print("Type your actions or questions to interact with the world. Type 'quit' to exit.")
         continue  # show help, then go back to waiting for input
