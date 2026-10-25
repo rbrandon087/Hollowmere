@@ -151,6 +151,10 @@ else: # the load existing adventure option
     rows = conn.execute("SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
         (campaign_id,),
     ).fetchall()
+    items_name = conn.execute("SELECT item_name FROM equipment WHERE campaign_id = %s;", (campaign_id,)).fetchall()
+    items = []
+    for row in items_name:
+        items.append(row[0])
 
     story_log = []
 
@@ -177,6 +181,9 @@ Their ability scores are:
 - Charisma: {charisma}
 10 is average for a person. Higher scores make related actions easier and lower scores make them harder. Let these scores shape how the world describes their efforts and how you read their rolls.
 Let their race and class shape how the world reacts to them, and what they can see, sense, and do.
+
+They are carrying: {', '.join(items)}.
+This is everything they own. If the player tries to use an item that is not on this list and that they did not pick up during the story, tell them they do not have it.
 
 GENRE
 This campaign's genre is: {genre}.
