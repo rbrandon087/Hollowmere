@@ -4,7 +4,9 @@
 # ============================================================
 
 # ---------- Imports ----------
-import os                       # lets us read environment variables (our secret keys)
+import random
+import os
+import re                       # lets us read environment variables (our secret keys)
 from openai import OpenAI       # the OpenAI library, so we can talk to the AI
 from dotenv import load_dotenv  # reads our .env file so os.getenv can find the keys
 import psycopg                  # lets Python talk to our Postgres database
@@ -19,6 +21,10 @@ client = OpenAI(api_key=openai_api_key)       # create the OpenAI client we'll s
 # Connect to the Render Postgres database.
 # autocommit=True means every INSERT saves right away (no separate "commit" step needed).
 conn = psycopg.connect(database_url, autocommit=True)
+
+# ---------- Dice ----------
+def roll_die(sides):
+    return random.randint(1, sides)
 
 print("Connected to the database!")
 
@@ -177,7 +183,16 @@ while True:  # keep the game going until the player quits
     user_input = input(">")  # wait for the player to type an action or question
 
     if user_input == "":
-         continue  # player just pressed Enter, so ignore it and ask again
+        continue  # player just pressed Enter, so ignore it and ask again
+                  
+    if user_input.lower() == "roll": # handle rolling a d20 die
+        roll_result = roll_die(20)
+        print(f"Rolled a d20: {roll_result}")
+        conn.execute(
+            "INSERT INTO dice_rolls (campaign_id, die, result) VALUES (%s, %s, %s)",
+            (campaign_id, "d20", roll_result),
+        )
+        continue 
 
     if user_input == "help":
         print("Type your actions or questions to interact with the world. Type 'quit' to exit.")
