@@ -67,8 +67,21 @@ if option_choice == "1": # the new adventure option
         else:
             print("Invalid choice. Please select 1, 2, or 3.")
             continue  # bad choice, so jump back to the top of the loop and show the menu again
+        # After selecting a genre, show the available races for the player to choose from.
+    races_table = conn.execute("SELECT id, name, description, traits FROM races ORDER BY id;")
+    for row in races_table:
+        print(f"{row[0]}. {row[1]} ({row[2]} - {row[3]})")
+    race_choice = int(input("Choose your race by entering the corresponding number: "))
+    race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
+    # Show the available classes for the player to choose from.
+    class_table = conn.execute("SELECT id, name, description, hit_die FROM classes ORDER BY id;")
+    for row in class_table:
+        print(f"{row[0]}. {row[1]} ({row[2]} - Hit Die: {row[3]})")
+    class_choice = int(input("Choose your class adventurer by entering the corresponding number: "))
+    class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
+    
     name = input("What is your name, adventurer? ")
-    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre) VALUES (%s, %s, %s) RETURNING id;", (player_id, name, genre)).fetchone()[0]
+    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id) VALUES (%s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice)).fetchone()[0]
     print(campaign_id)
     print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
@@ -78,9 +91,13 @@ else: # the load existing adventure option
     for row in existing_campaigns:
         print(f"{row[0]}. {row[1]} ({row[2]})")
     campaign_id = int(input("Enter the ID of the campaign you want to load: "))
-    campaign = conn.execute("SELECT character_name, genre FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
+    campaign = conn.execute("SELECT character_name, genre, race_id, class_id FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
     name = campaign[0]
     genre = campaign[1]
+    race_choice = campaign[2]
+    class_choice = campaign[3]
+    race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
+    class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
     rows = conn.execute("SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
         (campaign_id,),
     ).fetchall()
@@ -100,7 +117,8 @@ else: # the load existing adventure option
 # This tells the AI how to behave as the Dungeon Master every single turn.
 system_prompt = f"""You are the Dungeon Master, the narrator and guide of an immersive tabletop-style adventure. You control the world, its places, its creatures, and every character the player meets. The player controls only their own character.
 
-The player's character is named {name}.
+The player's character is {name}, a {race} {class_name}.
+Let their race and class shape how the world reacts to them, and what they can see, sense, and do.
 
 GENRE
 This campaign's genre is: {genre}.
@@ -195,7 +213,6 @@ while True:  # keep the game going until the player quits
         "role": "assistant",
         "content": response.output_text
     })
-    print(story_log[-1]["content"])
     conn.execute(
             "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
             (campaign_id, "assistant", response.output_text),
