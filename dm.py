@@ -80,6 +80,7 @@ while True:
     print("1. New Adventure")
     print("2. Load Adventure")
     print("3. Delete Adventure")
+    print("4. Reset Adventure")
     option_choice = input("Choose an option (1, 2, or 3):")
     if option_choice == "1":
         break  # start a new adventure
@@ -103,8 +104,21 @@ while True:
         print(f"Adventure with ID {delete_id} has been deleted.")
         # Delete an existing adventure
         continue  # go back to the top of the menu loop
+    elif option_choice == "4":
+        existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")# Fetch all existing campaigns to display for reset
+        for row in existing_campaigns:
+            print(f"{row[0]}. {row[1]} ({row[2]})")# Display each existing campaign with its ID, character name, and genre for reset
+        reset_id = int(input(f"Enter the ID of the adventure:"))
+        confirm_reset = input(f"Are you sure you want to reset adventure with ID {reset_id}? (yes/no): ")
+        if confirm_reset.lower() != "yes":
+            print("Reset cancelled.")
+            continue  # skip reset if not confirmed
+        conn.execute("DELETE FROM turns WHERE campaign_id = %s;", (reset_id,))# Delete all turns associated with the campaign
+        conn.execute("DELETE FROM dice_rolls WHERE campaign_id = %s;", (reset_id,))# Delete all dice rolls associated with the campaign
+        print(f"Adventure {reset_id} has been restarted. Load it to begin again!")
+        continue  # go back to the menu
     else:
-        print("Invalid choice. Please select 1, 2, or 3.")
+        print("Invalid choice. Please select 1, 2, 3, or 4.")
         continue  # go back to the top of the menu loop
 if option_choice == "1": # the new adventure option
     while True:  # keep showing the menu until the player picks a valid option
@@ -201,12 +215,9 @@ else: # the load existing adventure option
 
     story_log = []
 
-    for row in rows:
-        story_log.append({
-            "role": row[0],
-            "content": row[1]
-        })
-    print(story_log[-1]["content"])
+    if story_log:
+        
+        print(story_log[-1]["content"])
     
 
 # ---------- The DM's instructions (system prompt) ----------
@@ -277,7 +288,7 @@ BEFORE YOU SEND EACH RESPONSE, CHECK:
 # ---------- Opening scene ----------
 # Ask the AI to start the story.
 # instructions = the DM rules above. input = a behind-the-scenes nudge (not saved as part of the story).
-if option_choice == "1":
+if option_choice == "1" or not story_log: 
     response = client.responses.create(
         model="gpt-6-luna",
         instructions=system_prompt,
