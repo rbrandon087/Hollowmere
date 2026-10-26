@@ -79,14 +79,32 @@ print("Hollowmere: The Narrator Awakens")
 while True:
     print("1. New Adventure")
     print("2. Load Adventure")
-    option_choice = input("Choose an option (1 or 2):")
+    print("3. Delete Adventure")
+    option_choice = input("Choose an option (1, 2, or 3):")
     if option_choice == "1":
         break  # start a new adventure
     elif option_choice == "2":
         # Load an existing adventure
         break  # exit the main menu loop even though loading isn't implemented
+    elif option_choice == "3":
+        existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")# Fetch all existing campaigns to display for deletion
+        for row in existing_campaigns:
+            print(f"{row[0]}. {row[1]} ({row[2]})")# Display each existing campaign with its ID, character name, and genre
+        delete_id = int(input(f"Enter the ID of the adventure to delete: "))
+        confirm_delete = input(f"Are you sure you want to delete adventure with ID {delete_id}? (yes/no): ")# Ask the player to confirm deletion
+        if confirm_delete.lower() != "yes":# If the player does not confirm deletion, skip the deletion process
+            print("Deletion cancelled.")
+            continue  # skip deletion if not confirmed
+
+        conn.execute("DELETE FROM turns WHERE campaign_id = %s;", (delete_id,)) # Delete all turns associated with the campaign
+        conn.execute("DELETE FROM dice_rolls WHERE campaign_id = %s;", (delete_id,))#Delete all dice rolls associated with the campaign
+        conn.execute("DELETE FROM equipment WHERE campaign_id = %s;", (delete_id,)) # Delete all equipment associated with the campaign
+        conn.execute("DELETE FROM campaigns WHERE id = %s;", (delete_id,)) # Delete the campaign itself
+        print(f"Adventure with ID {delete_id} has been deleted.")
+        # Delete an existing adventure
+        continue  # go back to the top of the menu loop
     else:
-        print("Invalid choice. Please select 1 or 2.")
+        print("Invalid choice. Please select 1, 2, or 3.")
         continue  # go back to the top of the menu loop
 if option_choice == "1": # the new adventure option
     while True:  # keep showing the menu until the player picks a valid option
@@ -169,6 +187,7 @@ else: # the load existing adventure option
     intelligence = campaign[7]
     wisdom = campaign[8]
     charisma = campaign[9]
+    # Retrieve the character's background from the campaign record.
     background = campaign[10]
     race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
