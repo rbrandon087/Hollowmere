@@ -24,7 +24,7 @@ CREATE TABLE campaigns (
     character_name VARCHAR(50),
     race_id INTEGER REFERENCES races(id),
     class_id INTEGER REFERENCES classes(id),
-    background VARCHAR(50),
+    background TEXT,
     strength INTEGER,
     dexterity INTEGER,
     constitution INTEGER,

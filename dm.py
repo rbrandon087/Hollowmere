@@ -49,6 +49,19 @@ starting_equipment = {
                 
             }
 
+BACKGROUND = {
+    "Acolyte": "You have spent your life in the service of a temple to a specific god or pantheon of gods.",
+    "Criminal": "You have a history of breaking the law and living on the wrong side of the law.",
+    "Folk Hero": "You come from humble beginnings and have risen to prominence through your deeds.",
+    "Noble": "You were born into a wealthy and influential family.",
+    "Sage": "You have spent years learning the lore of the multiverse.",
+    "Soldier": "You have served in a military organization and are trained in combat.",
+    "Urchin": "You grew up on the streets, fending for yourself from a young age.",
+    "Hermit": "You lived in seclusion, away from society, to pursue your own personal goals or enlightenment.",
+    "Entertainer": "You have spent your life performing for others, whether as a musician, actor, or other type of entertainer.",
+    "Outlander": "You have spent your life in the wilds, far from civilization, and are skilled in survival and exploration.",
+}
+
 
 print("Connected to the database!")
 
@@ -116,9 +129,19 @@ if option_choice == "1": # the new adventure option
     wisdom = roll_ability_score()
     charisma = roll_ability_score()
     print(f"Your ability scores are:\nStrength: {strength}\nDexterity: {dexterity}\nConstitution: {constitution}\nIntelligence: {intelligence}\nWisdom: {wisdom}\nCharisma: {charisma}")
+    # Show the available backgrounds for the player to choose from.
+    for number, (bg_name, bg_description) in enumerate(BACKGROUND.items(), start=1):
+        print(f"{number}. {bg_name} - {bg_description}")
+    print("11. Write your own background story.")
+    background_choice = int(input("Choose your background by entering the corresponding number: "))
+    # Determine the background based on the player's choice.
+    if background_choice == 11:
+        background = input("Write your own background story: ")
+    else:
+        background = list(BACKGROUND.keys())[background_choice - 1]
     name = input("What is your name, adventurer? ")
     # Insert the new campaign into the database with the player's chosen character details and ability scores.
-    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice, strength, dexterity, constitution, intelligence, wisdom, charisma)).fetchone()[0]
+    campaign_id = conn.execute("INSERT INTO campaigns (player_id, character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma, background) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;", (player_id, name, genre, race_choice, class_choice, strength, dexterity, constitution, intelligence, wisdom, charisma, background)).fetchone()[0]
     # Assign starting equipment based on the chosen class.
     items = starting_equipment[class_name]
     print(f"Your starting equipment includes: {', '.join(items)}")
@@ -133,7 +156,7 @@ else: # the load existing adventure option
     for row in existing_campaigns:
         print(f"{row[0]}. {row[1]} ({row[2]})")
     campaign_id = int(input("Enter the ID of the campaign you want to load: "))
-    campaign = conn.execute("SELECT character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
+    campaign = conn.execute("SELECT character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma, background FROM campaigns WHERE id = %s;", (campaign_id,)).fetchone()
     name = campaign[0]
     genre = campaign[1]
     # Retrieve the character's race and class choices from the campaign record.
@@ -146,6 +169,7 @@ else: # the load existing adventure option
     intelligence = campaign[7]
     wisdom = campaign[8]
     charisma = campaign[9]
+    background = campaign[10]
     race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
     rows = conn.execute("SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
@@ -172,6 +196,8 @@ else: # the load existing adventure option
 system_prompt = f"""You are the Dungeon Master, the narrator and guide of an immersive tabletop-style adventure. You control the world, its places, its creatures, and every character the player meets. The player controls only their own character.
 
 The player's character is {name}, a {race} {class_name}. 
+Their background: {background}
+Weave this background into the story over time through people, places, rumors, and mysteries they encounter. If it holds an unanswered question, let the world slowly offer clues, but never answer it outright.
 Their ability scores are:
 - Strength: {strength}
 - Dexterity: {dexterity}
