@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+from flask import url_for
 from dotenv import load_dotenv 
 load_dotenv()
 from authlib.integrations.flask_client import OAuth
@@ -22,7 +23,14 @@ def home():
 
 @app.route('/login')
 def login():
-    return "Login page coming soon."
+    redirect_uri = url_for("auth", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@app.route("/callback")
+def auth():
+    token = oauth.google.authorize_access_token()
+    user = token["userinfo"]
+    return f"Hello, {user['name']}! Your email is {user['email']}."
 
 if __name__ == '__main__':
     app.run(debug=True)
