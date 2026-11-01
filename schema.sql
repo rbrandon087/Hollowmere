@@ -1,6 +1,9 @@
 CREATE TABLE players (
     id SERIAL PRIMARY KEY,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    email VARCHAR(100),
+    name VARCHAR(100),
+    sub VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE races (
