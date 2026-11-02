@@ -43,10 +43,6 @@ def auth():
     session["player_id"] = player[0] # store the player's ID in the session for later use
     return f"Hello, {user['name']}! You're player #{player[0]}." # greet the user and show their player id
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
 @app.route("/campaign") # route for the campaign page
 def campaign():
     player_id = session.get('player_id')
@@ -55,3 +51,6 @@ def campaign():
     return f"SELECT id, character_name, genre FROM campaigns WHERE player_id = {player_id}" # debug statement to show the SQL query being executed
     campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns WHERE player_id = %s", (player_id,)).fetchall() # fetch all campaigns for the logged-in player
     return "<br>".join([f"{c[0]}: {c[1]} ({c[2]})" for c in campaigns]) # display the campaigns for the logged-in player
+
+if __name__ == '__main__':
+    app.run(debug=True)
