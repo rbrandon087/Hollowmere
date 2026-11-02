@@ -52,4 +52,6 @@ def campaign():
     player_id = session.get('player_id')
     if not player_id:
             return "You must be logged in to view the campaign page."
-    return f"SELECT id, character_name, genre FROM campaigns WHERE player_id = {player_id}"
+    return f"SELECT id, character_name, genre FROM campaigns WHERE player_id = {player_id}" # debug statement to show the SQL query being executed
+    campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns WHERE player_id = %s", (player_id,)).fetchall() # fetch all campaigns for the logged-in player
+    return "<br>".join([f"{c[0]}: {c[1]} ({c[2]})" for c in campaigns]) # display the campaigns for the logged-in player
