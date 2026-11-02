@@ -1,5 +1,3 @@
-from requests import session
-
 import psycopg # Postgres database adapter for Python
 from flask import Flask, url_for, session # Flask web framework for Python
 import os # Operating system library for environment variables and file paths
@@ -36,14 +34,14 @@ def auth():
     token = oauth.google.authorize_access_token()
     user = token["userinfo"]
     player = conn.execute("SELECT * FROM players WHERE sub = %s", (user["sub"],)).fetchone() # fetch the player row if it exists
-    if not player: 
+    if not player:
         conn.execute( # insert a new player row into the database if it doesn't exist
             "INSERT INTO players (sub, name, email) VALUES (%s, %s, %s)", # SQL query to insert a new player row
             (user["sub"], user["name"], user["email"]) # values to insert into the new player row
         )
         player = conn.execute("SELECT * FROM players WHERE sub = %s", (user["sub"],)).fetchone() # fetch the newly inserted player row
-        session["player_id"] = player["0"] # store the player's ID in the session for later use
-    return f"Hello, {user['name']}! Your email is {user['email']}." # greet the user with their name and email after successful login
+    session["player_id"] = player[0] # store the player's ID in the session for later use
+    return f"Hello, {user['name']}! You're player #{player[0]}." # greet the user and show their player id
 
 if __name__ == '__main__':
     app.run(debug=True)

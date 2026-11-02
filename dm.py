@@ -4,9 +4,8 @@
 # ============================================================
 
 # ---------- Imports ----------
-import random 
-import os
-import re                       # lets us read environment variables (our secret keys)
+import random                   # rolls our dice
+import os                       # lets us read environment variables (our secret keys)
 from openai import OpenAI       # the OpenAI library, so we can talk to the AI
 from dotenv import load_dotenv  # reads our .env file so os.getenv can find the keys
 import psycopg                  # lets Python talk to our Postgres database
@@ -18,7 +17,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")  # grab the OpenAI key from .env
 database_url = os.getenv("DATABASE_URL")      # grab the database address from .env
 client = OpenAI(api_key=openai_api_key)       # create the OpenAI client we'll send requests through
 
-# Connect to the Render Postgres database.
+# Connect to the Postgres database on the Mac.
 # autocommit=True means every INSERT saves right away (no separate "commit" step needed).
 conn = psycopg.connect(database_url, autocommit=True)
 
@@ -46,8 +45,7 @@ starting_equipment = {
     "Warlock": ["light crossbow", "component pouch", "explorer's pack", "dagger"],
     "Sorcerer": ["dagger", "component pouch", "explorer's pack", "arcane focus"],
     "Artificer": ["light crossbow", "thieves' tools", "explorer's pack", "dagger"],
-                
-            }
+}
 
 BACKGROUND = {
     "Acolyte": "You have spent your life in the service of a temple to a specific god or pantheon of gods.",
@@ -81,12 +79,11 @@ while True:
     print("2. Load Adventure")
     print("3. Delete Adventure")
     print("4. Reset Adventure")
-    option_choice = input("Choose an option (1, 2, or 3):")
+    option_choice = input("Choose an option (1, 2, 3, or 4): ")
     if option_choice == "1":
         break  # start a new adventure
     elif option_choice == "2":
-        # Load an existing adventure
-        break  # exit the main menu loop even though loading isn't implemented
+        break  # load an existing adventure (handled in the Load box below)
     elif option_choice == "3":
         existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")# Fetch all existing campaigns to display for deletion
         for row in existing_campaigns:
@@ -108,7 +105,7 @@ while True:
         existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")# Fetch all existing campaigns to display for reset
         for row in existing_campaigns:
             print(f"{row[0]}. {row[1]} ({row[2]})")# Display each existing campaign with its ID, character name, and genre for reset
-        reset_id = int(input(f"Enter the ID of the adventure:"))
+        reset_id = int(input("Enter the ID of the adventure to restart: "))
         confirm_reset = input(f"Are you sure you want to reset adventure with ID {reset_id}? (yes/no): ")
         if confirm_reset.lower() != "yes":
             print("Reset cancelled.")
@@ -183,7 +180,6 @@ if option_choice == "1": # the new adventure option
     print(f"Welcome {name}, to the world of {genre}! Your journey begins now.")
 
 else: # the load existing adventure option
-    # Here you would implement loading an existing campaign
     existing_campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns ORDER BY id;")
     for row in existing_campaigns:
         print(f"{row[0]}. {row[1]} ({row[2]})")
@@ -213,12 +209,19 @@ else: # the load existing adventure option
     for row in items_name:
         items.append(row[0])
 
+    # Rebuild the DM's memory (story_log) from the saved turns.
     story_log = []
+    for row in rows:
+        story_log.append({
+            "role": row[0],
+            "content": row[1]
+        })
 
+    # Show the last scene so the player knows where they left off.
+    # If the story is empty (a restarted adventure), the opening scene below writes a new one.
     if story_log:
-        
         print(story_log[-1]["content"])
-    
+
 
 # ---------- The DM's instructions (system prompt) ----------
 # f""" ... """ is a multi-line f-string, so {name} and {genre} get filled in with the player's choices.
