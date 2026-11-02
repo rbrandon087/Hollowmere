@@ -1,0 +1,927 @@
+/* ==========================================================
+   HOLLOWMERE: THE NARRATOR AWAKENS
+   A candlelit dungeon. Dark stone, oxblood, gold leaf,
+   and narration set like an illuminated manuscript.
+   ========================================================== */
+
+/* ---------- 1. Tokens (change the whole look from here) ---------- */
+:root {
+  /* color */
+  --crypt:      #120d0b;   /* page background: dark stone */
+  --stone:      #1c1512;   /* panels */
+  --stone-2:    #251c17;   /* raised panels, inputs */
+  --iron:       #3d2f27;   /* borders */
+  --vellum:     #e8dabb;   /* main text */
+  --ash:        #a38f75;   /* secondary text */
+  --gold:       #c9a24b;   /* clickable things, ornaments */
+  --gold-hi:    #ecc977;   /* hover, selected, crits */
+  --oxblood:    #6e1b1b;   /* primary buttons, drop caps */
+  --oxblood-hi: #8c2525;
+  --blood:      #b8382c;   /* low HP, fumbles */
+
+  /* type */
+  --font-display: "Uncial Antiqua", "Luminari", Georgia, serif;
+  --font-body:    "EB Garamond", Garamond, Georgia, serif;
+
+  --step--1: 0.95rem;
+  --step-0:  1.125rem;      /* 18px body: Garamond runs small */
+  --step-1:  1.35rem;
+  --step-2:  1.8rem;
+  --step-3:  2.5rem;
+  --step-title: clamp(3rem, 11vw, 7.5rem);
+
+  /* space */
+  --space-1: 0.375rem;
+  --space-2: 0.75rem;
+  --space-3: 1.25rem;
+  --space-4: 2rem;
+  --space-5: 3.25rem;
+
+  --radius: 2px;
+  --measure: 62ch;
+  --sheet-width: 320px;
+
+  /* gold corner brackets, reused on framed panels */
+  --corners:
+    linear-gradient(var(--gold), var(--gold)) left 10px top 10px     / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) left 10px top 10px     / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) right 10px top 10px    / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) right 10px top 10px    / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) left 10px bottom 10px  / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) left 10px bottom 10px  / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) right 10px bottom 10px / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) right 10px bottom 10px / 2px 18px no-repeat;
+
+  /* faint stone grain */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9  0 0 0 0 0.8  0 0 0 0 0.6  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- 2. Base ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background:
+    var(--grain),
+    radial-gradient(ellipse 90% 70% at 50% 40%, #1d1410 0%, var(--crypt) 70%);
+  background-color: var(--crypt);
+  color: var(--vellum);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 400; }
+p { margin: 0; }
+
+::selection { background: var(--oxblood); color: var(--gold-hi); }
+
+:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* a stone panel with gold corner brackets */
+.frame {
+  background: var(--corners), var(--stone);
+  border: 1px solid var(--iron);
+  box-shadow:
+    inset 0 0 0 5px var(--stone),
+    inset 0 0 0 6px rgb(201 162 75 / 0.18),
+    0 20px 60px rgb(0 0 0 / 0.55);
+}
+
+/* ---------- 3. Screens ----------
+   Every screen is hidden until it gets .is-active.
+   Your JS swaps that class to move between screens. */
+.screen { display: none; min-height: 100dvh; }
+.screen.is-active { display: flex; }
+
+/* ---------- 4. Buttons ---------- */
+.btn {
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: 500;
+  color: var(--vellum);
+  background: var(--stone-2);
+  border: 1px solid var(--iron);
+  border-radius: var(--radius);
+  padding: 0.55em 1.4em;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 0 rgb(0 0 0 / 0.5);
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+.btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-hi);
+}
+.btn:active { transform: translateY(1px); box-shadow: none; }
+
+/* primary: an oxblood plaque with gold lettering */
+.btn--primary {
+  color: var(--gold-hi);
+  background: linear-gradient(to bottom, var(--oxblood-hi), var(--oxblood));
+  border-color: var(--gold);
+  box-shadow:
+    inset 0 0 0 2px var(--oxblood),
+    inset 0 0 0 3px rgb(236 201 119 / 0.35),
+    0 2px 0 rgb(0 0 0 / 0.6);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+}
+.btn--primary:hover {
+  background: linear-gradient(to bottom, #a22d2d, var(--oxblood-hi));
+  border-color: var(--gold-hi);
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  color: var(--ash);
+  opacity: 0.55;
+  border-color: var(--iron);
+  cursor: not-allowed;
+}
+.btn--small {
+  font-size: var(--step--1);
+  padding: 0.3em 0.9em;
+}
+
+/* ==========================================================
+   SCREEN 1: TITLE
+   ========================================================== */
+.title-screen {
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-4) 16px;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* warm candle glow behind the crest; it flickers gently */
+.candlelight {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 900px;
+  height: 700px;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, rgb(214 140 60 / 0.16), rgb(140 37 37 / 0.06) 55%, transparent);
+  animation: candle 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes candle {
+  0%, 100% { opacity: 1;    scale: 1; }
+  20%      { opacity: 0.82; scale: 0.985; }
+  45%      { opacity: 0.95; scale: 1.01; }
+  70%      { opacity: 0.78; scale: 0.99; }
+}
+
+.title-block {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.crest {
+  width: clamp(72px, 12vw, 104px);
+  margin-bottom: var(--space-3);
+  filter: drop-shadow(0 6px 16px rgb(0 0 0 / 0.7));
+}
+.crest__shield { fill: var(--gold); }
+.crest__inner  { fill: var(--oxblood); }
+.crest__die polygon,
+.crest__die line {
+  fill: none;
+  stroke: var(--gold-hi);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* gold-leaf lettering */
+.title {
+  font-family: var(--font-display);
+  font-size: var(--step-title);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  background: linear-gradient(to bottom, #f7e3a6 0%, var(--gold) 48%, #8a6a2a 52%, var(--gold-hi) 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 rgb(0 0 0 / 0.8)) drop-shadow(0 0 30px rgb(201 162 75 / 0.25));
+}
+
+/* the subtitle sits between two short gold rules */
+.subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-style: italic;
+  font-size: var(--step-1);
+  color: var(--ash);
+  letter-spacing: 0.03em;
+}
+.subtitle::before,
+.subtitle::after {
+  content: "";
+  width: clamp(28px, 8vw, 72px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.subtitle::after { transform: scaleX(-1); }
+
+.title-menu {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(100%, 290px);
+}
+
+/* ==========================================================
+   SCREEN 2: NEW TALE
+   ========================================================== */
+.setup-screen {
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-5) 16px;
+}
+
+.setup {
+  width: min(100%, 900px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+.setup__heading {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  line-height: 1.15;
+  color: var(--gold);
+  text-align: center;
+}
+
+.field-label {
+  display: block;
+  font-style: italic;
+  font-size: var(--step-1);
+  color: var(--ash);
+  margin-bottom: var(--space-1);
+}
+
+/* three hanging heraldic banners */
+.genres {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.genre {
+  position: relative;
+  display: block;
+  padding-top: 12px;          /* room for the banner pole */
+  cursor: pointer;
+}
+/* the iron pole the banner hangs from */
+.genre::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: -10px;
+  right: -10px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #6b5a48, #2a201a);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.6);
+}
+
+/* the real radio stays (keyboard + screen readers) but is invisible */
+.genre input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* outer layer = the banner's trim color */
+.genre__face {
+  --banner-cut: polygon(0 0, 100% 0, 100% 86%, 50% 100%, 0 86%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-4) var(--space-3) var(--space-5);
+  text-align: center;
+  background: var(--iron);
+  clip-path: var(--banner-cut);
+  transition: background-color 200ms, transform 200ms;
+}
+/* inner layer = the cloth */
+.genre__face::before {
+  content: "";
+  position: absolute;
+  inset: 0 3px 3px;
+  background: var(--grain), linear-gradient(to bottom, var(--stone-2), var(--stone));
+  clip-path: var(--banner-cut);
+  z-index: -1;
+}
+.genre__face > * { position: relative; }
+.genre__face { isolation: isolate; }
+
+.genre:hover .genre__face { background: var(--gold); }
+
+.genre input:checked + .genre__face {
+  background: var(--gold-hi);
+  transform: translateY(4px);       /* the chosen banner drops a little */
+}
+.genre input:checked + .genre__face::before {
+  background: var(--grain), linear-gradient(to bottom, var(--oxblood-hi), var(--oxblood));
+}
+.genre input:checked + .genre__face .genre__desc { color: var(--vellum); }
+
+.genre input:focus-visible + .genre__face {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 4px;
+}
+
+.genre__name {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1.2;
+  color: var(--gold-hi);
+}
+.genre__desc {
+  font-size: var(--step--1);
+  color: var(--ash);
+  line-height: 1.45;
+  max-width: 22ch;
+}
+
+/* heraldic sigils drawn with CSS */
+.genre__sigil {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--space-2);
+  color: var(--gold);
+}
+/* horror: an eye with a slit pupil */
+.genre__sigil--horror::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 2px solid currentColor;
+  border-radius: 75% 0;
+  transform: rotate(45deg);
+}
+.genre__sigil--horror::after {
+  content: "";
+  position: absolute;
+  left: 17px; right: 17px;
+  top: 11px; bottom: 11px;
+  background: currentColor;
+  border-radius: 50%;
+}
+/* fantasy: a four-point star */
+.genre__sigil--fantasy {
+  background: currentColor;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+/* both: a crescent moon */
+.genre__sigil--both {
+  border-radius: 50%;
+  box-shadow: inset 11px -5px 0 0 currentColor;
+}
+
+.name-field {
+  width: min(100%, 460px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.text-input {
+  width: 100%;
+  font: inherit;
+  font-size: var(--step-1);
+  text-align: center;
+  color: var(--vellum);
+  background: var(--crypt);
+  border: 1px solid var(--iron);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.6);
+  transition: border-color 150ms;
+}
+.text-input::placeholder { color: var(--ash); opacity: 0.55; font-style: italic; }
+.text-input:focus { outline: none; border-color: var(--gold); }
+
+.setup__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* ==========================================================
+   SCREEN 3: THE GAME
+   ========================================================== */
+.game-screen.is-active {
+  display: grid;
+  height: 100dvh;
+  grid-template-columns: 1fr var(--sheet-width);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "bar    bar"
+    "story  sheet"
+    "action sheet";
+}
+
+/* top bar */
+.game-bar {
+  grid-area: bar;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(to bottom, var(--stone-2), var(--stone));
+  border-bottom: 1px solid var(--iron);
+  box-shadow: 0 1px 0 rgb(201 162 75 / 0.2), 0 8px 20px rgb(0 0 0 / 0.4);
+  position: relative;
+  z-index: 2;
+}
+.game-bar__title {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  color: var(--gold);
+}
+.game-bar__actions { display: flex; gap: var(--space-1); }
+.btn--sheet { display: none; } /* only shown on small screens */
+
+/* story log */
+.story {
+  grid-area: story;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  scroll-behavior: smooth;
+  scrollbar-color: var(--iron) transparent;
+}
+
+.entry {
+  max-width: var(--measure);
+  margin: 0 auto var(--space-4);
+  animation: entry-in 450ms ease-out both;
+}
+@keyframes entry-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* the narrator: an illuminated manuscript page */
+.entry--narrator p {
+  margin-bottom: 0.9em;
+  font-size: 1.22rem;
+  line-height: 1.75;
+}
+.entry--narrator p:first-child::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.1em;
+  line-height: 1;
+  padding: 0.12em 0.16em 0.06em;
+  margin: 0.12em 0.14em 0 0;
+  color: var(--gold-hi);
+  background: var(--oxblood);
+  border: 1px solid var(--gold);
+  box-shadow: inset 0 0 0 3px var(--oxblood), inset 0 0 0 4px rgb(236 201 119 / 0.4);
+}
+.entry__prompt {
+  font-style: italic;
+  color: var(--gold);
+}
+/* a small ornament closes each narrator passage */
+.entry--narrator::after {
+  content: "\2766";
+  display: block;
+  margin-top: var(--space-2);
+  text-align: center;
+  color: var(--gold);
+  opacity: 0.45;
+  font-size: var(--step-1);
+}
+
+/* the player: their own words, quieter, set in the margin */
+.entry--player {
+  position: relative;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  color: var(--vellum);
+  font-style: italic;
+  background: rgb(37 28 23 / 0.6);
+  border-left: 2px solid var(--gold);
+}
+.entry--player::before {
+  content: "\2756";
+  position: absolute;
+  left: 0.6rem;
+  color: var(--gold);
+  font-style: normal;
+  font-size: 0.8em;
+  top: 0.95em;
+}
+
+/* dice results inside the story */
+.entry--roll p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--ash);
+}
+.entry--roll p::before,
+.entry--roll p::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--iron));
+}
+.entry--roll p::after { transform: scaleX(-1); }
+.roll__die {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gold-hi);
+  background: var(--oxblood);
+  border: 1px solid var(--gold);
+  padding: 0 0.5em;
+  border-radius: var(--radius);
+}
+.roll__total {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--gold-hi);
+  line-height: 1;
+}
+
+/* "the narrator is writing..." */
+.entry--pending { display: flex; gap: 7px; justify-content: center; }
+.quill-dot {
+  width: 7px; height: 7px;
+  rotate: 45deg;
+  background: var(--gold);
+  animation: flicker 1.2s ease-in-out infinite;
+}
+.quill-dot:nth-child(2) { animation-delay: 0.2s; }
+.quill-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes flicker {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 1; }
+}
+
+/* the action bar at the bottom */
+.action-bar {
+  grid-area: action;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--iron);
+  background: linear-gradient(to bottom, var(--stone), var(--crypt));
+}
+.action-bar__caret {
+  color: var(--gold);
+  font-size: var(--step-0);
+}
+.action-bar__input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 1.2rem;
+  color: var(--vellum);
+  background: var(--crypt);
+  border: 1px solid var(--iron);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.6);
+}
+.action-bar__input::placeholder { color: var(--ash); opacity: 0.55; font-style: italic; }
+.action-bar__input:focus { outline: none; border-color: var(--gold); }
+
+/* ---------- character sheet ---------- */
+.sheet {
+  grid-area: sheet;
+  overflow-y: auto;
+  background: var(--grain), var(--stone);
+  border-left: 1px solid var(--iron);
+  box-shadow: inset 1px 0 0 rgb(201 162 75 / 0.15);
+  padding: var(--space-4) var(--space-3);
+  scrollbar-color: var(--iron) transparent;
+}
+.sheet__section {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--iron);
+}
+.sheet__section:last-child { border-bottom: 0; margin-bottom: 0; }
+
+.sheet__who { text-align: center; }
+.sheet__name {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: 1.1;
+  color: var(--gold-hi);
+  overflow-wrap: anywhere;
+}
+.sheet__genre { color: var(--ash); font-style: italic; }
+
+.sheet__heading {
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  color: var(--gold);
+  margin-bottom: var(--space-2);
+}
+
+/* armor class shield + hit points side by side */
+.sheet__vitals {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ac {
+  flex: none;
+  width: 58px;
+  height: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  clip-path: path("M29 0 L58 9 V34 C58 52 45 61 29 66 C13 61 0 52 0 34 V9 Z");
+  position: relative;
+}
+.ac::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--stone-2);
+  clip-path: path("M26 0 L52 8 V31 C52 47 40 55 26 60 C12 55 0 47 0 31 V8 Z");
+}
+.ac__value, .ac__label { position: relative; }
+.ac__value {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1;
+  color: var(--vellum);
+  margin-top: -4px;
+}
+.ac__label { font-size: 0.7rem; color: var(--ash); }
+
+/* hit points bar: JS sets --hp, e.g. el.style.setProperty("--hp", "40%") */
+.hp { flex: 1; }
+.hp__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--step--1);
+  color: var(--ash);
+  margin-bottom: var(--space-1);
+}
+.hp__label span:last-child { color: var(--vellum); }
+.hp__track {
+  height: 10px;
+  background: var(--crypt);
+  border: 1px solid var(--iron);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.8);
+  overflow: hidden;
+}
+.hp__fill {
+  height: 100%;
+  width: var(--hp, 100%);
+  background: linear-gradient(to bottom, #c4473a, var(--oxblood));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2);
+  transition: width 400ms ease;
+}
+/* add .is-low to .hp when health is under 30% */
+.hp.is-low .hp__fill { background: var(--blood); animation: flicker 1.6s ease-in-out infinite; }
+
+/* the six ability scores, D&D style */
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3) var(--space-2);
+  margin: 0;
+}
+.ability {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-1) 0 var(--space-3);
+  background: var(--stone-2);
+  border: 1px solid var(--iron);
+  border-radius: 6px 6px 40% 40% / 6px 6px 18% 18%;
+}
+.ability dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ash);
+}
+.ability dd { margin: 0; }
+.ability__score {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1.2;
+  color: var(--vellum);
+}
+.ability__mod {
+  position: absolute;
+  bottom: -11px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gold-hi);
+  background: var(--crypt);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0 0.55em;
+  line-height: 1.5;
+}
+
+/* inventory */
+.satchel {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.satchel li {
+  position: relative;
+  padding: var(--space-1) 0 var(--space-1) 1.1em;
+  border-bottom: 1px dotted var(--iron);
+}
+.satchel li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  translate: 0 -50%;
+  rotate: 45deg;
+}
+.satchel li:last-child { border-bottom: 0; }
+.satchel__empty { font-style: italic; color: var(--ash); }
+
+/* ---------- the d20 ---------- */
+.dice { text-align: center; }
+.dice .sheet__heading { text-align: left; }
+
+.d20 {
+  position: relative;
+  width: 104px;
+  height: 116px;
+  margin: var(--space-2) auto var(--space-3);
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.6));
+  transition: background-color 150ms, transform 150ms;
+}
+.d20::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: linear-gradient(160deg, var(--oxblood-hi), #3d0f0f);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+/* the triangle face in the middle */
+.d20::after {
+  content: "";
+  position: absolute;
+  inset: 20% 14% 24%;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%, 50% 0, 50% 6%, 5% 96%, 95% 96%, 50% 6%);
+  opacity: 0.7;
+}
+.d20:hover { background: var(--gold-hi); transform: rotate(-4deg); }
+.d20:focus-visible { outline: none; background: var(--gold-hi); }
+
+.d20__face {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.45em;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--gold-hi);
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.6);
+}
+
+/* add .is-rolling to .d20 for ~600ms while it rolls */
+.d20.is-rolling { animation: tumble 600ms cubic-bezier(.3,.7,.4,1); }
+@keyframes tumble {
+  0%   { transform: rotate(0) scale(1); }
+  40%  { transform: rotate(200deg) scale(0.85); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+/* natural 20 and natural 1 */
+.d20.is-crit   .d20__face { color: #fff3c9; text-shadow: 0 0 14px var(--gold-hi); }
+.d20.is-fumble .d20__face { color: #ff8f80; }
+
+.roll-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  font-size: var(--step--1);
+}
+.roll-history li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2em 0;
+  color: var(--ash);
+}
+.roll-history li:first-child { color: var(--vellum); }
+.roll-history li.is-crit span:last-child   { color: var(--gold-hi); font-weight: 600; }
+.roll-history li.is-fumble span:last-child { color: var(--blood); font-weight: 600; }
+
+/* ==========================================================
+   SMALL SCREENS
+   ========================================================== */
+@media (max-width: 860px) {
+  .setup { padding: var(--space-4) var(--space-3) var(--space-3); }
+  .genres { grid-template-columns: 1fr; gap: var(--space-3); }
+  .genre__face { padding: var(--space-3) var(--space-3) var(--space-4); }
+  .genre__desc { max-width: 32ch; }
+
+  .game-screen.is-active {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "bar"
+      "story"
+      "action";
+  }
+  .btn--sheet { display: inline-block; }
+
+  .story { padding: var(--space-4) 16px var(--space-3); }
+  .action-bar { padding: var(--space-2) 16px; }
+
+  /* the sheet becomes a drawer: JS toggles .is-open */
+  .sheet {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(88vw, var(--sheet-width));
+    z-index: 10;
+    transform: translateX(100%);
+    transition: transform 250ms ease;
+    box-shadow: -20px 0 40px rgb(0 0 0 / 0.6);
+  }
+  .sheet.is-open { transform: none; }
+}
+
+@media (max-width: 520px) {
+  .game-bar__title { display: none; }
+  .game-bar { justify-content: flex-end; }
+  .setup__heading { font-size: var(--step-2); }
+  .entry--narrator p { font-size: 1.12rem; }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

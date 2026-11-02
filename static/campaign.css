@@ -1,0 +1,85 @@
+:root {
+  --bg: #0d0c10;
+  --panel: #17151c;
+  --border: #2c2833;
+  --text: #ddd6c8;
+  --muted: #8d8578;
+  --candle: #d9a441;
+  --blood: #8b2e2e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.banner {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  margin: 0;
+  font-size: 2.6rem;
+  letter-spacing: 0.08em;
+  color: var(--candle);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: normal;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.campaign-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.campaign {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blood);
+}
+
+.campaign-name {
+  font-size: 1.1rem;
+}
+
+.campaign-genre {
+  font-size: 0.9rem;
+  color: var(--candle);
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  margin-top: 32px;
+}

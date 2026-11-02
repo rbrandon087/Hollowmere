@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hollowmere · Your Adventures</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='campaign.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="banner">
+      <h1 class="title">Hollowmere</h1>
+      <p class="subtitle">The Narrator Awakens</p>
+    </header>
+
+    <h2 class="section-title">Your adventures</h2>
+
+    {% if campaigns %}
+      <ul class="campaign-list">
+        {% for c in campaigns %}
+          <li class="campaign">
+            <span class="campaign-name">{{ c[1] }}</span>
+            <span class="campaign-genre">{{ c[2] }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">You have not started any adventures yet.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

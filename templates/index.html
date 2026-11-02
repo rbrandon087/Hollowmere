@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hollowmere: The Narrator Awakens</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- =========================================================
+       SCREEN 1: TITLE
+       Only one .screen should have .is-active at a time.
+       ========================================================= -->
+  <section class="screen title-screen is-active" id="screen-title" aria-labelledby="game-title">
+    <div class="candlelight" aria-hidden="true"></div>
+
+    <div class="title-block">
+      <!-- heraldic crest: a shield bearing a d20 -->
+      <svg class="crest" viewBox="0 0 100 120" aria-hidden="true">
+        <path class="crest__shield" d="M50 4 L94 18 V58 C94 86 74 104 50 116 C26 104 6 86 6 58 V18 Z"/>
+        <path class="crest__inner"  d="M50 12 L86 23 V58 C86 81 70 96 50 106 C30 96 14 81 14 58 V23 Z"/>
+        <g class="crest__die">
+          <polygon points="50,30 72,43 72,69 50,82 28,69 28,43"/>
+          <polygon points="50,40 64,64 36,64"/>
+          <line x1="50" y1="30" x2="50" y2="40"/><line x1="72" y1="43" x2="64" y2="64"/>
+          <line x1="28" y1="43" x2="36" y2="64"/><line x1="72" y1="69" x2="64" y2="64"/>
+          <line x1="28" y1="69" x2="36" y2="64"/><line x1="50" y1="82" x2="64" y2="64"/>
+          <line x1="50" y1="82" x2="36" y2="64"/>
+        </g>
+      </svg>
+
+      <h1 class="title" id="game-title">Hollowmere</h1>
+      <p class="subtitle">The Narrator Awakens</p>
+    </div>
+
+    <nav class="title-menu" aria-label="Main menu">
+      <button class="btn btn--primary" id="btn-new-tale" type="button">Begin a new tale</button>
+      <button class="btn" id="btn-continue" type="button" disabled>Continue your tale</button>
+    </nav>
+  </section>
+
+
+  <!-- =========================================================
+       SCREEN 2: NEW TALE (genre + name)
+       ========================================================= -->
+  <section class="screen setup-screen" id="screen-setup" aria-labelledby="setup-heading">
+    <form class="setup frame" id="setup-form">
+      <h2 class="setup__heading" id="setup-heading">Choose your banner</h2>
+
+      <fieldset class="genres">
+        <legend class="sr-only">Genre</legend>
+
+        <label class="genre">
+          <input type="radio" name="genre" value="Horror" required>
+          <span class="genre__face">
+            <span class="genre__sigil genre__sigil--horror" aria-hidden="true"></span>
+            <span class="genre__name">Horror</span>
+            <span class="genre__desc">Things that should be dead. Doors that should stay shut.</span>
+          </span>
+        </label>
+
+        <label class="genre">
+          <input type="radio" name="genre" value="Fantasy">
+          <span class="genre__face">
+            <span class="genre__sigil genre__sigil--fantasy" aria-hidden="true"></span>
+            <span class="genre__name">Fantasy</span>
+            <span class="genre__desc">Old roads, older magic, and a realm that wants exploring.</span>
+          </span>
+        </label>
+
+        <label class="genre">
+          <input type="radio" name="genre" value="Horror and Fantasy">
+          <span class="genre__face">
+            <span class="genre__sigil genre__sigil--both" aria-hidden="true"></span>
+            <span class="genre__name">Horror &amp; Fantasy</span>
+            <span class="genre__desc">Wonder with teeth. The magic is real, and so is what hunts it.</span>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="name-field">
+        <label class="field-label" for="player-name">What is your name, adventurer?</label>
+        <input class="text-input" id="player-name" name="name" type="text" autocomplete="off" maxlength="32" required placeholder="Your character's name">
+      </div>
+
+      <div class="setup__actions">
+        <button class="btn" id="btn-back" type="button">Back</button>
+        <button class="btn btn--primary" type="submit">Enter Hollowmere</button>
+      </div>
+    </form>
+  </section>
+
+
+  <!-- =========================================================
+       SCREEN 3: THE GAME
+       ========================================================= -->
+  <section class="screen game-screen" id="screen-game" aria-label="Your adventure">
+
+    <header class="game-bar">
+      <p class="game-bar__title">Hollowmere</p>
+      <div class="game-bar__actions">
+        <button class="btn btn--small btn--sheet" id="btn-sheet" type="button" aria-expanded="false" aria-controls="sheet">Character</button>
+        <button class="btn btn--small" id="btn-help" type="button">Help</button>
+        <button class="btn btn--small" id="btn-save" type="button">Save</button>
+        <button class="btn btn--small" id="btn-quit" type="button">Leave</button>
+      </div>
+    </header>
+
+    <main class="story" id="story-log" aria-live="polite">
+      <!-- SAMPLE ENTRIES so you can see the styles.
+           Your JS will create these from story_log instead. -->
+
+      <article class="entry entry--narrator">
+        <p>The lantern gutters as you step off the ferry. Hollowmere lies flat and black beneath a sky the color of a bruise, and the water makes no sound against the posts, not even a lap. Mist hangs at knee height, cold and wet where it brushes the backs of your hands.</p>
+        <p>Ahead, the village leans toward the lake: crooked roofs, shuttered windows, a chapel whose bell tower tilts like a man listening. Somewhere behind the chapel a dog is barking, then stops, mid-bark, all at once.</p>
+        <p>A woman in a grey shawl stands at the end of the pier with a basket of eels. She has not looked up.</p>
+        <p class="entry__prompt">What do you do?</p>
+      </article>
+
+      <article class="entry entry--player">
+        <p>I ask the woman why the dog stopped barking.</p>
+      </article>
+
+      <article class="entry entry--roll" aria-label="Dice roll">
+        <p><span class="roll__die">d20</span> Insight check <span class="roll__total">14</span></p>
+      </article>
+
+      <article class="entry entry--narrator">
+        <p>She lifts her head slowly. Her eyes are milky at the edges, and there is lake-weed caught in her hair. "Dogs know when to hush," she says. "You'd do well to learn it before sundown."</p>
+        <p class="entry__prompt">What do you do?</p>
+      </article>
+
+      <!-- Show this while you wait for OpenAI to answer, then remove it -->
+      <article class="entry entry--pending" aria-label="The narrator is writing">
+        <span class="quill-dot"></span><span class="quill-dot"></span><span class="quill-dot"></span>
+      </article>
+    </main>
+
+    <form class="action-bar" id="action-form">
+      <label class="sr-only" for="player-input">What do you do?</label>
+      <span class="action-bar__caret" aria-hidden="true">&#10070;</span>
+      <input class="action-bar__input" id="player-input" type="text" autocomplete="off" placeholder="What do you do?">
+      <button class="btn btn--primary" type="submit">Act</button>
+    </form>
+
+    <aside class="sheet" id="sheet" aria-label="Character sheet">
+
+      <div class="sheet__section sheet__who">
+        <h2 class="sheet__name" id="sheet-name">Brandon</h2>
+        <p class="sheet__genre" id="sheet-genre">Horror</p>
+      </div>
+
+      <div class="sheet__section sheet__vitals">
+        <div class="ac" aria-label="Armor class 13">
+          <span class="ac__value" id="ac-value">13</span>
+          <span class="ac__label">Armor</span>
+        </div>
+
+        <div class="hp" style="--hp: 70%">
+          <div class="hp__label">
+            <span>Hit points</span>
+            <span id="hp-text">14 / 20</span>
+          </div>
+          <div class="hp__track" aria-hidden="true"><div class="hp__fill"></div></div>
+        </div>
+      </div>
+
+      <div class="sheet__section">
+        <h3 class="sheet__heading">Abilities</h3>
+        <!-- placeholders until the character builder (Phase 3) -->
+        <dl class="abilities">
+          <div class="ability"><dt>STR</dt><dd class="ability__score">10</dd><dd class="ability__mod">+0</dd></div>
+          <div class="ability"><dt>DEX</dt><dd class="ability__score">14</dd><dd class="ability__mod">+2</dd></div>
+          <div class="ability"><dt>CON</dt><dd class="ability__score">12</dd><dd class="ability__mod">+1</dd></div>
+          <div class="ability"><dt>INT</dt><dd class="ability__score">13</dd><dd class="ability__mod">+1</dd></div>
+          <div class="ability"><dt>WIS</dt><dd class="ability__score">15</dd><dd class="ability__mod">+2</dd></div>
+          <div class="ability"><dt>CHA</dt><dd class="ability__score">8</dd><dd class="ability__mod">&minus;1</dd></div>
+        </dl>
+      </div>
+
+      <div class="sheet__section">
+        <h3 class="sheet__heading">Inventory</h3>
+        <ul class="satchel" id="satchel">
+          <li>Brass lantern</li>
+          <li>Ferry token, bent</li>
+        </ul>
+        <!-- When the list is empty, show this instead -->
+        <p class="satchel__empty" hidden>Your hands are empty.</p>
+      </div>
+
+      <div class="sheet__section dice">
+        <h3 class="sheet__heading">Dice</h3>
+        <button class="d20" id="btn-roll" type="button" aria-label="Roll a d20">
+          <span class="d20__face" id="d20-result">20</span>
+        </button>
+        <ol class="roll-history" id="roll-history" reversed>
+          <li><span>Insight</span> <span>14</span></li>
+          <li class="is-fumble"><span>Perception</span> <span>1</span></li>
+          <li class="is-crit"><span>Stealth</span> <span>20</span></li>
+        </ol>
+      </div>
+    </aside>
+  </section>
+
+  <!-- Your JS goes here -->
+  <!-- <script src="game.js"></script> -->
+</body>
+</html>

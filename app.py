@@ -1,5 +1,5 @@
 import psycopg # Postgres database adapter for Python
-from flask import Flask, url_for, session # Flask web framework for Python
+from flask import Flask, url_for, render_template, session # Flask web framework for Python
 import os # Operating system library for environment variables and file paths
 from dotenv import load_dotenv # loads environment variables from a .env file
 load_dotenv()
@@ -22,7 +22,7 @@ oauth.register(
 
 @app.route('/')
 def home():
-    return "Welcome to Hollowmere!"
+    return render_template("index.html")
 
 @app.route('/login')
 def login():
@@ -51,7 +51,7 @@ def campaign():
     campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns WHERE player_id = %s", (player_id,)).fetchall() # fetch all campaigns for the logged-in player
     if not campaigns:
         return "You have not started any adventures yet."
-    return "<br>".join([f"{c[0]}: {c[1]} ({c[2]})" for c in campaigns]) # display the campaigns for the logged-in player
+    return render_template("campaigns.html", campaigns=campaigns) # display the campaigns for the logged-in player
 
 if __name__ == '__main__':
     app.run(debug=True)
