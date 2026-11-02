@@ -4,7 +4,7 @@
 # ============================================================
 
 # ---------- Imports ----------
-import random
+import random 
 import os
 import re                       # lets us read environment variables (our secret keys)
 from openai import OpenAI       # the OpenAI library, so we can talk to the AI

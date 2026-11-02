@@ -1,9 +1,14 @@
-from flask import Flask
-import os
-from flask import url_for
-from dotenv import load_dotenv 
+from requests import session
+
+import psycopg # Postgres database adapter for Python
+from flask import Flask, url_for, session # Flask web framework for Python
+import os # Operating system library for environment variables and file paths
+from dotenv import load_dotenv # loads environment variables from a .env file
 load_dotenv()
-from authlib.integrations.flask_client import OAuth
+from authlib.integrations.flask_client import OAuth # OAuth library for handling authentication with external providers
+
+database_url = os.getenv("DATABASE_URL") # grab the database address from .env
+conn = psycopg.connect(database_url, autocommit=True) # connect to the Postgres database with autocommit enabled
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
@@ -23,14 +28,22 @@ def home():
 
 @app.route('/login')
 def login():
-    redirect_uri = url_for("auth", _external=True)
-    return oauth.google.authorize_redirect(redirect_uri)
+    redirect_uri = url_for("auth", _external=True) # build the redirect URI for the OAuth callback
+    return oauth.google.authorize_redirect(redirect_uri) # redirect the user to the Google OAuth login page
 
 @app.route("/callback")
 def auth():
     token = oauth.google.authorize_access_token()
     user = token["userinfo"]
-    return f"Hello, {user['name']}! Your email is {user['email']}."
+    player = conn.execute("SELECT * FROM players WHERE sub = %s", (user["sub"],)).fetchone() # fetch the player row if it exists
+    if not player: 
+        conn.execute( # insert a new player row into the database if it doesn't exist
+            "INSERT INTO players (sub, name, email) VALUES (%s, %s, %s)", # SQL query to insert a new player row
+            (user["sub"], user["name"], user["email"]) # values to insert into the new player row
+        )
+        player = conn.execute("SELECT * FROM players WHERE sub = %s", (user["sub"],)).fetchone() # fetch the newly inserted player row
+        session["player_id"] = player["0"] # store the player's ID in the session for later use
+    return f"Hello, {user['name']}! Your email is {user['email']}." # greet the user with their name and email after successful login
 
 if __name__ == '__main__':
     app.run(debug=True)
