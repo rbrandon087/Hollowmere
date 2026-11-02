@@ -45,3 +45,11 @@ def auth():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+@app.route("/campaign") # route for the campaign page
+def campaign():
+    player_id = session.get('player_id')
+    if not player_id:
+            return "You must be logged in to view the campaign page."
+    return f"SELECT id, character_name, genre FROM campaigns WHERE player_id = {player_id}"
