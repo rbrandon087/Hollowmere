@@ -49,6 +49,8 @@ def campaign():
     if not player_id:
             return "You must be logged in to view the campaign page."
     campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns WHERE player_id = %s", (player_id,)).fetchall() # fetch all campaigns for the logged-in player
+    if not campaigns:
+        return "You have not started any adventures yet."
     return "<br>".join([f"{c[0]}: {c[1]} ({c[2]})" for c in campaigns]) # display the campaigns for the logged-in player
 
 if __name__ == '__main__':
