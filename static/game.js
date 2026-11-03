@@ -3,6 +3,17 @@ const continueButton = document.getElementById('btn-continue'); // Button to con
 const backButton = document.getElementById('btn-back'); // Button to go back to the title screen
 const setupScreen = document.getElementById('screen-setup'); // The setup screen section
 const titleScreen = document.getElementById('screen-title'); // The title screen section
+const backgroundSelect = document.getElementById('background-select'); // The background selection dropdown
+const customBackgroundField = document.getElementById('custom-background-field'); // The custom background input field
+
+// Event listener for the background selection dropdown
+backgroundSelect.addEventListener('change', () => {
+    if (backgroundSelect.value === 'custom') {
+        customBackgroundField.hidden = false;
+    } else {
+        customBackgroundField.hidden = true;
+    }
+});
 
 
 // Event listener for the "New Tale" button
