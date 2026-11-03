@@ -11,12 +11,6 @@ newButton.addEventListener('click', () => {
     setupScreen.classList.add('is-active');
 })
 
-// Event listener for the "Continue" button
-continueButton.addEventListener('click', () => {
-    titleScreen.classList.remove('is-active');
-    setupScreen.classList.add('is-active');
-})
-
 // Event listener for the "Back" button
 backButton.addEventListener('click', () => {
     setupScreen.classList.remove('is-active');
