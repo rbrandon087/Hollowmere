@@ -22,7 +22,9 @@ oauth.register(
 
 @app.route('/')
 def home():
-    return render_template("index.html")
+    races = conn.execute("SELECT id, name, description, traits FROM races ORDER BY id").fetchall() # fetch all races from the database
+    classes = conn.execute("SELECT id, name,description, hit_die FROM classes ORDER BY id").fetchall() # fetch all classes from the database
+    return render_template("index.html", races=races, classes=classes, backgrounds=BACKGROUND)
 
 @app.route('/login')
 def login():

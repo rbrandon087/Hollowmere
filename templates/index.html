@@ -46,7 +46,9 @@
 
 
   <!-- =========================================================
-       SCREEN 2: NEW TALE (genre + name)
+       SCREEN 2: NEW TALE (genre, race, class, background, name)
+       Races and classes come from the database. app.py passes them
+       in with render_template(..., races=..., classes=..., backgrounds=...)
        ========================================================= -->
   <section class="screen setup-screen" id="screen-setup" aria-labelledby="setup-heading">
     <form class="setup frame" id="setup-form">
@@ -82,6 +84,52 @@
           </span>
         </label>
       </fieldset>
+
+      <!-- Race, class, and background -->
+      <div class="forge">
+        <h3 class="forge__heading">Forge your adventurer</h3>
+
+        <div class="forge__row">
+          <div class="field">
+            <label class="field-label" for="race-select">Race</label>
+            <select class="select" id="race-select" name="race_id" required>
+              <option value="" disabled selected>Choose a race</option>
+              {% for race in races %}
+                {# race = (id, name, description, traits) #}
+                <option value="{{ race[0] }}">{{ race[1] }}: {{ race[2] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="class-select">Class</label>
+            <select class="select" id="class-select" name="class_id" required>
+              <option value="" disabled selected>Choose a class</option>
+              {% for cls in classes %}
+                {# cls = (id, name, description, hit_die) #}
+                <option value="{{ cls[0] }}">{{ cls[1] }} (d{{ cls[3] }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="background-select">Background</label>
+            <select class="select" id="background-select" name="background" required>
+              <option value="" disabled selected>Choose a past</option>
+              {% for bg_name, bg_desc in (backgrounds or {}).items() %}
+                <option value="{{ bg_name }}" title="{{ bg_desc }}">{{ bg_name }}</option>
+              {% endfor %}
+              <option value="custom">Write your own...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Hidden until the player picks "Write your own..." (your JS shows it) -->
+        <div class="field" id="custom-background-field" hidden>
+          <label class="field-label" for="custom-background">Who were you, before Hollowmere?</label>
+          <textarea class="text-area" id="custom-background" name="background_custom" rows="4" maxlength="1000" placeholder="Raised by a gravedigger, I learned to speak with the restless dead..."></textarea>
+        </div>
+      </div>
 
       <div class="name-field">
         <label class="field-label" for="player-name">What is your name, adventurer?</label>
