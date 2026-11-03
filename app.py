@@ -8,6 +8,20 @@ from authlib.integrations.flask_client import OAuth # OAuth library for handling
 database_url = os.getenv("DATABASE_URL") # grab the database address from .env
 conn = psycopg.connect(database_url, autocommit=True) # connect to the Postgres database with autocommit enabled
 
+BACKGROUND = {
+    "Acolyte": "You have spent your life in the service of a temple to a specific god or pantheon of gods.",
+    "Criminal": "You have a history of breaking the law and living on the wrong side of the law.",
+    "Folk Hero": "You come from humble beginnings and have risen to prominence through your deeds.",
+    "Noble": "You were born into a wealthy and influential family.",
+    "Sage": "You have spent years learning the lore of the multiverse.",
+    "Soldier": "You have served in a military organization and are trained in combat.",
+    "Urchin": "You grew up on the streets, fending for yourself from a young age.",
+    "Hermit": "You lived in seclusion, away from society, to pursue your own personal goals or enlightenment.",
+    "Entertainer": "You have spent your life performing for others, whether as a musician, actor, or other type of entertainer.",
+    "Outlander": "You have spent your life in the wilds, far from civilization, and are skilled in survival and exploration.",
+}
+
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
