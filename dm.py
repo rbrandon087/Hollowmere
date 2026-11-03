@@ -190,14 +190,12 @@ else: # the load existing adventure option
     # Retrieve the character's race and class choices from the campaign record.
     race_choice = campaign[2]
     class_choice = campaign[3]
-    # Retrieve the character's ability scores from the campaign record.
     strength = campaign[4]
     dexterity = campaign[5]
     constitution = campaign[6]
     intelligence = campaign[7]
     wisdom = campaign[8]
     charisma = campaign[9]
-    # Retrieve the character's background from the campaign record.
     background = campaign[10]
     race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
