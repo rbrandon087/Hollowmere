@@ -10,7 +10,8 @@ const gameScreen = document.getElementById('screen-game'); // The game screen se
 
 setupForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    console.log('Form submitted');
+    const data = Object.fromEntries(new FormData(setupForm));
+    console.log(data);
 });
 
 // Event listener for the background selection dropdown
