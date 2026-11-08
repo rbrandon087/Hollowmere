@@ -13,7 +13,7 @@ setupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(setupForm)); // Convert form data to an object
     
-    const response = await fetch('/api/camapigns', {
+    const response = await fetch('/api/campaigns', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
