@@ -5,6 +5,13 @@ const setupScreen = document.getElementById('screen-setup'); // The setup screen
 const titleScreen = document.getElementById('screen-title'); // The title screen section
 const backgroundSelect = document.getElementById('background-select'); // The background selection dropdown
 const customBackgroundField = document.getElementById('custom-background-field'); // The custom background input field
+const setupForm = document.getElementById('setup-form'); // The setup form element
+const gameScreen = document.getElementById('screen-game'); // The game screen section
+
+setupForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    console.log('Form submitted');
+});
 
 // Event listener for the background selection dropdown
 backgroundSelect.addEventListener('change', () => {
