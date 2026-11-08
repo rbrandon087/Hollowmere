@@ -24,6 +24,9 @@ setupForm.addEventListener('submit', async (event) => {
 
     const result = await response.json();// Parse the JSON response from the server
     console.log(result.campaign_id);
+
+    setupScreen.classList.remove('is-active'); // Hide the setup screen
+    gameScreen.classList.add('is-active'); // Show the game screen
 });
 
 // Event listener for the background selection dropdown
