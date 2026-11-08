@@ -12,7 +12,7 @@ const gameScreen = document.getElementById('screen-game'); // The game screen se
 setupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(setupForm)); // Convert form data to an object
-    
+    // Send the form data to the server to create a new campaign
     const response = await fetch('/api/campaigns', {
         method: 'POST',
         headers: {
@@ -21,6 +21,9 @@ setupForm.addEventListener('submit', async (event) => {
         body: JSON.stringify(data)
     });
     console.log(response.status);
+
+    const result = await response.json();// Parse the JSON response from the server
+    console.log(result.campaign_id);
 });
 
 // Event listener for the background selection dropdown
