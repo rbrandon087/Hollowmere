@@ -8,10 +8,19 @@ const customBackgroundField = document.getElementById('custom-background-field')
 const setupForm = document.getElementById('setup-form'); // The setup form element
 const gameScreen = document.getElementById('screen-game'); // The game screen section
 
-setupForm.addEventListener('submit', (event) => {
+// Event listener for the setup form submission
+setupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const data = Object.fromEntries(new FormData(setupForm));
-    console.log(data);
+    const data = Object.fromEntries(new FormData(setupForm)); // Convert form data to an object
+    
+    const response = await fetch('/api/camapigns', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    console.log(response.status);
 });
 
 // Event listener for the background selection dropdown
