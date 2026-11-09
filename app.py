@@ -1,6 +1,7 @@
 import psycopg # Postgres database adapter for Python
 import random # for generating random numbers and choices
 from flask import Flask, url_for, render_template, session, request, jsonify # Flask web framework for Python
+from openai import OpenAI
 import os # Operating system library for environment variables and file paths
 from dotenv import load_dotenv # loads environment variables from a .env file
 load_dotenv()
@@ -8,6 +9,8 @@ from authlib.integrations.flask_client import OAuth # OAuth library for handling
 
 database_url = os.getenv("DATABASE_URL") # grab the database address from .env
 conn = psycopg.connect(database_url, autocommit=True) # connect to the Postgres database with autocommit enabled
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Starting equipment for each class in the game
 starting_equipment = {
