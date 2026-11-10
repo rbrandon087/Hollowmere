@@ -209,6 +209,24 @@ def create_campaign():
     for item in items:
         conn.execute("INSERT INTO equipment (campaign_id, item_name, quantity) VALUES (%s, %s, %s);", (campaign_id, item, 1))
     return jsonify({"campaign_id": campaign_id})
+# Route to start a campaign for the logged-in player
+@app.route("/api/campaigns/<int:campaign_id>/start", methods=["POST"])
+def start_campaign(campaign_id):
+    player_id = session.get('player_id')
+    if not player_id:
+        return "You must be logged in to start a campaign"
+
+    system_prompt = build_system_prompt(campaign_id)
+    response = client.responses.create(
+        model="gpt-6-luna",
+        instructions=system_prompt,
+        input="Begin the adventure",
+    )
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "assistant", response.output_text),
+    )
+    return jsonify({"narration": response.output_text})
      
 @app.route("/test-prompt/<int:campaign_id>")
 def test_prompt(campaign_id):
