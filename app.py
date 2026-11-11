@@ -227,7 +227,47 @@ def start_campaign(campaign_id):
         (campaign_id, "assistant", response.output_text),
     )
     return jsonify({"narration": response.output_text})
-     
+# Route to take a turn in the campaign
+@app.route("/api/campaigns/<int:campaign_id>/turns", methods=["POST"])
+def take_turn(campaign_id):
+    player_id = session.get('player_id')
+    if not player_id:
+        return "You must be logged in to take a turn"
+
+    data = request.get_json()
+    player_action = data.get("action")
+
+    rows = conn.execute(
+        "SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
+        (campaign_id,),
+    ).fetchall()
+
+    story_log = []
+    for row in rows:
+        story_log.append({
+            "role": row[0],
+            "content": row[1]
+        })
+
+    story_log.append({
+        "role": "user",
+        "content": player_action
+    })
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "user", player_action)
+    )
+    system_prompt = build_system_prompt(campaign_id)
+    response = client.responses.create(
+        model="gpt-6-luna",
+        instructions=system_prompt,
+        input=story_log,
+    )
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "assistant", response.output_text)
+    )
+    return jsonify({"narration": response.output_text})
 @app.route("/test-prompt/<int:campaign_id>")
 def test_prompt(campaign_id):
     return build_system_prompt(campaign_id)
