@@ -269,6 +269,39 @@ def take_turn(campaign_id):
         (campaign_id, "assistant", response.output_text)
     )
     return jsonify({"narration": response.output_text})
+# Route to get campaign details
+ @app.route("/api/campaigns/<int:campaign_id>", methods=["GET"])
+def get_campaign(campaign_id):
+    player_id = session.get('player_id')
+    if not player_id:
+        return "You must be logged in to view this campaign"
+    
+    campaign = conn.execute(
+         "SELECT character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma FROM campaigns WHERE id = %s AND player_id = %s",
+        (campaign_id, player_id)
+    ).fetchone()
+    if not campaign:
+        return jsonify({"error": "Campaign not found"}), 404
+    race = conn.execute("SELECT name FROM races WHERE id = %s;", (campaign[2],)).fetchone()[0]
+    class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (campaign[3],)).fetchone()[0]
+    items_name = conn.execute("SELECT item_name FROM equipment WHERE campaign_id = %s;", (campaign_id,)).fetchall()
+    items = []
+    for row in items_name:
+        items.append(row[0])
+    return jsonify({
+        "character_name": campaign[0],
+        "genre": campaign[1],
+        "race": race,
+        "class": class_name,
+        "strength": campaign[4],
+        "dexterity": campaign[5],
+        "constitution": campaign[6],
+        "intelligence": campaign[7],
+        "wisdom": campaign[8],
+        "charisma": campaign[9],
+        "items": items
+    })
+
 @app.route("/test-prompt/<int:campaign_id>")
 def test_prompt(campaign_id):
     return build_system_prompt(campaign_id)
