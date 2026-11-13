@@ -270,7 +270,7 @@ def take_turn(campaign_id):
     )
     return jsonify({"narration": response.output_text})
 # Route to get campaign details
- @app.route("/api/campaigns/<int:campaign_id>", methods=["GET"])
+@app.route("/api/campaigns/<int:campaign_id>", methods=["GET"])
 def get_campaign(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
