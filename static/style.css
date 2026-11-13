@@ -995,3 +995,7 @@ p { margin: 0; }
     transition-duration: 0.01ms !important;
   }
 }
+
+.entry {
+  white-space: pre-line;
+}
