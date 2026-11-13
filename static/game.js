@@ -8,7 +8,26 @@ const customBackgroundField = document.getElementById('custom-background-field')
 const setupForm = document.getElementById('setup-form'); // The setup form element
 const gameScreen = document.getElementById('screen-game'); // The game screen section
 let currentCampaignId = null;
+const actionForm = document.getElementById('action-form'); // The action form element
+const playerInput = document.getElementById('player-input'); // The player input field
+// Event listener for the action form submission
+actionForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const action = playerInput.value; // Get the player's action input
+    addEntry(action, 'player');
+    playerInput.value = ''; // Clear the input field after submitting
+    const response = await fetch(`/api/campaigns/${currentCampaignId}/turns`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action })
+    });
+    const result = await response.json();
+    addEntry(result.narration, 'narrator');
 
+})
+// The element that displays the story log
 const storyLog = document.getElementById('story-log'); // The element that displays the story log
 function addEntry(text,type) {
     const entry = document.createElement('article')
