@@ -14,6 +14,9 @@ const playerInput = document.getElementById('player-input'); // The player input
 actionForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const action = playerInput.value; // Get the player's action input
+    if (action.trim() === '') {// Ignore empty input
+        return;
+    }
     addEntry(action, 'player');
     playerInput.value = ''; // Clear the input field after submitting
     const response = await fetch(`/api/campaigns/${currentCampaignId}/turns`, {
