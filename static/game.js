@@ -56,23 +56,25 @@ async function loadCharacterSheet() {
     const response = await fetch(`/api/campaigns/${currentCampaignId}`);
     const character = await response.json();
     console.log(character);
+
     document.getElementById('sheet-name').textContent = character.character_name;
     document.getElementById('sheet-genre').textContent = character.genre;
+
     updateAbilityScore('str', character.strength);
     updateAbilityScore('dex', character.dexterity);
     updateAbilityScore('con', character.constitution);
     updateAbilityScore('int', character.intelligence);
     updateAbilityScore('wis', character.wisdom);
     updateAbilityScore('cha', character.charisma);
-}
 
-const satchel = document.getElementById('satchel');
-satchel.innerHTML = ''; // Clear the satchel contents initially
+    const satchel = document.getElementById('satchel');
+    satchel.innerHTML = ''; // Clear the satchel contents initially
 
-for (const item of character.items) {
-    const li = document.createElement('li');
-    li.textContent = item;
-    satchel.appendChild(li);
+    for (const item of character.items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        satchel.appendChild(li);
+    }
 }
 
 // Event listener for the setup form submission
