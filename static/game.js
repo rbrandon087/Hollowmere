@@ -44,7 +44,11 @@ function addEntry(text,type) {
   function updateAbilityScore(id, score) {
         document.getElementById(`score-${id}`).textContent = score;
         const mod = Math.floor((score - 10) / 2);
-        document.getElementById(`mod-${id}`).textContent = mod;
+        if (mod >= 0) {
+            document.getElementById(`mod-${id}`).textContent = '+' + mod;
+        } else {
+            document.getElementById(`mod-${id}`).textContent = mod;
+        }
     }
 
 // Load the character sheet data from the server and update the UI accordingly
