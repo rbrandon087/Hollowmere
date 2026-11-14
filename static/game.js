@@ -10,6 +10,8 @@ const gameScreen = document.getElementById('screen-game'); // The game screen se
 let currentCampaignId = null;
 const actionForm = document.getElementById('action-form'); // The action form element
 const playerInput = document.getElementById('player-input'); // The player input field
+
+
 // Event listener for the action form submission
 actionForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -38,6 +40,12 @@ function addEntry(text,type) {
     entry.textContent = text;
     storyLog.appendChild(entry);
 }
+// Load the character sheet data from the server and update the UI accordingly
+async function loadCharacterSheet() {
+    const response = await fetch(`/api/campaigns/${currentCampaignId}`);
+    const character = await response.json();
+    console.log(character);
+}
 
 // Event listener for the setup form submission
 setupForm.addEventListener('submit', async (event) => {
@@ -59,6 +67,7 @@ setupForm.addEventListener('submit', async (event) => {
 
     setupScreen.classList.remove('is-active'); // Hide the setup screen
     gameScreen.classList.add('is-active'); // Show the game screen
+    loadCharacterSheet();
 
     const startResponse = await fetch(`/api/campaigns/${currentCampaignId}/start`, {
         method: 'POST'
