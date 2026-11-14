@@ -40,11 +40,26 @@ function addEntry(text,type) {
     entry.textContent = text;
     storyLog.appendChild(entry);
 }
+// Update the ability score and modifier for a given ability ID and score in the character sheet
+  function updateAbilityScore(id, score) {
+        document.getElementById(`score-${id}`).textContent = score;
+        const mod = Math.floor((score - 10) / 2);
+        document.getElementById(`mod-${id}`).textContent = mod;
+    }
+
 // Load the character sheet data from the server and update the UI accordingly
 async function loadCharacterSheet() {
     const response = await fetch(`/api/campaigns/${currentCampaignId}`);
     const character = await response.json();
     console.log(character);
+        document.getElementById('sheet-name').textContent = character.character_name;
+        document.getElementById('sheet-genre').textContent = character.genre;
+    updateAbilityScore('str', character.strength);
+    updateAbilityScore('dex', character.dexterity);
+    updateAbilityScore('con', character.constitution);
+    updateAbilityScore('int', character.intelligence);
+    updateAbilityScore('wis', character.wisdom);
+    updateAbilityScore('cha', character.charisma);
 }
 
 // Event listener for the setup form submission
