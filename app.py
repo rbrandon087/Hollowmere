@@ -132,6 +132,43 @@ BEFORE YOU SEND EACH RESPONSE, CHECK:
 3. Does it end with "What do you do?" or "Type roll to find out."?
 """
     return system_prompt
+# Function to ask the DM (AI) for a response based on the current story log and user message
+# It retrieves the story log from the database, appends the user's message, sends it to the AI,
+# stores the AI's response, and returns the response text.
+def ask_dm(campaign_id, message):
+    rows = conn.execute(
+        "SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
+        (campaign_id,),
+    ).fetchall()
+
+    story_log = []
+    for row in rows:
+        story_log.append({
+            "role": row[0],
+            "content": row[1]
+        })
+
+    story_log.append({
+        "role": "user",
+        "content": message
+    })
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "user", message)
+    )
+
+    system_prompt = build_system_prompt(campaign_id)
+    response = client.responses.create(
+        model="gpt-6-luna",
+        instructions=system_prompt,
+        input=story_log,
+    )
+    conn.execute(
+        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
+        (campaign_id, "assistant", response.output_text)
+    )
+
+    return response.output_text
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
@@ -237,38 +274,8 @@ def take_turn(campaign_id):
 
     data = request.get_json()
     player_action = data.get("action")
-
-    rows = conn.execute(
-        "SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
-        (campaign_id,),
-    ).fetchall()
-
-    story_log = []
-    for row in rows:
-        story_log.append({
-            "role": row[0],
-            "content": row[1]
-        })
-
-    story_log.append({
-        "role": "user",
-        "content": player_action
-    })
-    conn.execute(
-        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
-        (campaign_id, "user", player_action)
-    )
-    system_prompt = build_system_prompt(campaign_id)
-    response = client.responses.create(
-        model="gpt-6-luna",
-        instructions=system_prompt,
-        input=story_log,
-    )
-    conn.execute(
-        "INSERT INTO turns (campaign_id, role, content) VALUES (%s, %s, %s)",
-        (campaign_id, "assistant", response.output_text)
-    )
-    return jsonify({"narration": response.output_text})
+    narration = ask_dm(campaign_id, player_action)
+    return jsonify({"narration": narration})
 # Route to get campaign details
 @app.route("/api/campaigns/<int:campaign_id>", methods=["GET"])
 def get_campaign(campaign_id):
