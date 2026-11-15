@@ -276,6 +276,25 @@ def take_turn(campaign_id):
     player_action = data.get("action")
     narration = ask_dm(campaign_id, player_action)
     return jsonify({"narration": narration})
+# Route to roll a die in the campaign
+@app.route("/api/campaigns/<int:campaign_id>/roll", methods=["POST"])
+def roll(campaign_id):
+    player_id = session.get('player_id')
+    if not player_id:
+        return "You must be logged in to roll"
+
+    data = request.get_json()
+    reason = data.get("reason") or "my last action"
+    roll_result = roll_die(20)                     
+
+    conn.execute(
+        "INSERT INTO dice_rolls (campaign_id, die, result, reason) VALUES (%s, %s, %s, %s)", 
+        (campaign_id, "d20", roll_result, reason),
+    )
+
+    narration = ask_dm(campaign_id, f"Rolling for: {reason}. I rolled a d20 and got {roll_result}.")
+    return jsonify({"narration": narration, "roll_result": roll_result})
+
 # Route to get campaign details
 @app.route("/api/campaigns/<int:campaign_id>", methods=["GET"])
 def get_campaign(campaign_id):
