@@ -22,6 +22,8 @@ actionForm.addEventListener('submit', async (event) => {
     if (action.trim() === '') {// Ignore empty input
         return;
     }
+    rollButton.disabled = true; // Disable the roll button while the action is being processed
+    playerInput.disabled = true; // Disable the player input while the action is being processed
     addEntry(action, 'player');
     playerInput.value = ''; // Clear the input field after submitting
     const response = await fetch(`/api/campaigns/${currentCampaignId}/turns`, {
@@ -33,6 +35,8 @@ actionForm.addEventListener('submit', async (event) => {
     });
     const result = await response.json();
     addEntry(result.narration, 'narrator');
+    rollButton.disabled = false; // Re-enable the roll button after the action is processed
+    playerInput.disabled = false; // Re-enable the player input after the action is processed
 
 })
 // The element that displays the story log
@@ -132,6 +136,7 @@ backButton.addEventListener('click', () => {
 })
 // Event listener for the "Roll" button
 rollButton.addEventListener('click', async () => {
+    rollButton.disabled = true; // Disable the roll button while the roll is being processed
     const reason = playerInput.value; // Get the reason for the roll from the player input field
     playerInput.value = ''; // Clear the player input field after getting the reason
 
@@ -145,4 +150,5 @@ rollButton.addEventListener('click', async () => {
     const result = await response.json();
     d20Face.textContent = result.roll_result; // Display the result of the d20 roll
     addEntry(result.narration, 'narrator');
+    rollButton.disabled = false; // Re-enable the roll button after the roll is processed
 });
