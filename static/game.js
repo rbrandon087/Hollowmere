@@ -10,6 +10,9 @@ const gameScreen = document.getElementById('screen-game'); // The game screen se
 let currentCampaignId = null;
 const actionForm = document.getElementById('action-form'); // The action form element
 const playerInput = document.getElementById('player-input'); // The player input field
+const rollButton = document.getElementById('btn-roll'); // Button to roll the dice
+const d20Face = document.getElementById('d20-result'); // The element that displays the result of the d20 roll
+const rollHistory = document.getElementById('roll-history'); // The element that displays the roll history
 
 
 // Event listener for the action form submission
@@ -127,3 +130,19 @@ backButton.addEventListener('click', () => {
     setupScreen.classList.remove('is-active');
     titleScreen.classList.add('is-active');
 })
+// Event listener for the "Roll" button
+rollButton.addEventListener('click', async () => {
+    const reason = playerInput.value; // Get the reason for the roll from the player input field
+    playerInput.value = ''; // Clear the player input field after getting the reason
+
+    const response = await fetch(`/api/campaigns/${currentCampaignId}/roll`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason })
+    });
+    const result = await response.json();
+    d20Face.textContent = result.roll_result; // Display the result of the d20 roll
+    addEntry(result.narration, 'narrator');
+});
