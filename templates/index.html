@@ -14,7 +14,6 @@
 
   <!-- =========================================================
        SCREEN 1: TITLE
-       Only one .screen should have .is-active at a time.
        ========================================================= -->
   <section class="screen title-screen is-active" id="screen-title" aria-labelledby="game-title">
     <div class="candlelight" aria-hidden="true"></div>
@@ -124,7 +123,7 @@
           </div>
         </div>
 
-        <!-- Hidden until the player picks "Write your own..." (your JS shows it) -->
+        
         <div class="field" id="custom-background-field" hidden>
           <label class="field-label" for="custom-background">Who were you, before Hollowmere?</label>
           <textarea class="text-area" id="custom-background" name="background_custom" rows="4" maxlength="1000" placeholder="Raised by a gravedigger, I learned to speak with the restless dead..."></textarea>
@@ -221,15 +220,12 @@
           <span class="d20__face" id="d20-result">20</span>
         </button>
         <ol class="roll-history" id="roll-history" reversed>
-          <li><span>Insight</span> <span>14</span></li>
-          <li class="is-fumble"><span>Perception</span> <span>1</span></li>
-          <li class="is-crit"><span>Stealth</span> <span>20</span></li>
+          
         </ol>
       </div>
     </aside>
   </section>
 
-  <!-- Your JS goes here -->
   <script src="{{ url_for('static', filename='game.js') }}"></script>
 </body>
 </html>

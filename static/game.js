@@ -149,6 +149,9 @@ rollButton.addEventListener('click', async () => {
     });
     const result = await response.json();
     d20Face.textContent = result.roll_result; // Display the result of the d20 roll
+    const li = document.createElement('li');
+    li.textContent = `${reason || 'Roll'}: ${result.roll_result}`;
+    rollHistory.prepend(li);
     addEntry(`Rolled a d20: ${result.roll_result}`, 'roll');
     addEntry(result.narration, 'narrator');
     rollButton.disabled = false; // Re-enable the roll button after the roll is processed
