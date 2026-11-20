@@ -63,6 +63,8 @@ def build_system_prompt(campaign_id): # Build the system prompt for the given ca
     wisdom = campaign[8]
     charisma = campaign[9]
     background = campaign[10]
+    if background in BACKGROUND:
+        background = f"{background} ({BACKGROUND[background]})"
     race = conn.execute("SELECT name FROM races WHERE id = %s;", (race_choice,)).fetchone()[0]
     class_name = conn.execute("SELECT name FROM classes WHERE id = %s;", (class_choice,)).fetchone()[0]
     items_name = conn.execute("SELECT item_name FROM equipment WHERE campaign_id = %s;", (campaign_id,)).fetchall()
@@ -170,6 +172,13 @@ def ask_dm(campaign_id, message):
 
     return response.output_text
 
+def own_campaigns(campaign_id, player_id):
+    row = conn.execute(
+            "SELECT ID FROM campaigns WHERE id = %s AND player_id = %s",
+            (campaign_id, player_id)
+        )
+    return row.fetchone() is not None
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
@@ -253,6 +262,9 @@ def start_campaign(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
         return "You must be logged in to start a campaign"
+    if not own_campaigns(campaign_id, player_id):
+        return jsonify({"error": "You do not own this campaign"}), 404
+    
 
     system_prompt = build_system_prompt(campaign_id)
     response = client.responses.create(
@@ -271,6 +283,8 @@ def take_turn(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
         return "You must be logged in to take a turn"
+    if not own_campaigns(campaign_id, player_id):
+        return jsonify({"error": "You do not own this campaign"}), 404
 
     data = request.get_json()
     player_action = data.get("action")
@@ -282,6 +296,8 @@ def roll(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
         return "You must be logged in to roll"
+    if not own_campaigns(campaign_id, player_id):
+        return jsonify({"error": "You do not own this campaign"}), 404
 
     data = request.get_json()
     reason = data.get("reason") or "my last action"
@@ -327,10 +343,5 @@ def get_campaign(campaign_id):
         "charisma": campaign[9],
         "items": items
     })
-
-@app.route("/test-prompt/<int:campaign_id>")
-def test_prompt(campaign_id):
-    return build_system_prompt(campaign_id)
-
 if __name__ == '__main__':
     app.run(debug=True)
