@@ -26,6 +26,7 @@ actionForm.addEventListener('submit', async (event) => {
     playerInput.disabled = true; // Disable the player input while the action is being processed
     addEntry(action, 'player');
     playerInput.value = ''; // Clear the input field after submitting
+    const dots = showWritingDots();
     const response = await fetch(`/api/campaigns/${currentCampaignId}/turns`, {
         method: 'POST',
         headers: {
@@ -34,6 +35,7 @@ actionForm.addEventListener('submit', async (event) => {
         body: JSON.stringify({ action })
     });
     const result = await response.json();
+    dots.remove();
     addEntry(result.narration, 'narrator');
     rollButton.disabled = false; // Re-enable the roll button after the action is processed
     playerInput.disabled = false; // Re-enable the player input after the action is processed
@@ -47,6 +49,14 @@ function addEntry(text,type) {
     entry.textContent = text;
     storyLog.appendChild(entry);
 }
+function showWritingDots() {
+    const dots = document.createElement('article');
+    dots.className = 'entry entry--pending';
+    dots.innerHTML = '<span class="quill-dot"></span><span class="quill-dot"></span><span class="quill-dot"></span>';
+    storyLog.appendChild(dots);
+    return dots; // Return the dots element so it can be removed later if needed
+}
+
 // Update the ability score and modifier for a given ability ID and score in the character sheet
   function updateAbilityScore(id, score) {
         document.getElementById(`score-${id}`).textContent = score;
@@ -105,11 +115,12 @@ setupForm.addEventListener('submit', async (event) => {
     setupScreen.classList.remove('is-active'); // Hide the setup screen
     gameScreen.classList.add('is-active'); // Show the game screen
     loadCharacterSheet();
-
+    const dots = showWritingDots();
     const startResponse = await fetch(`/api/campaigns/${currentCampaignId}/start`, {
         method: 'POST'
     });
     const startResult = await startResponse.json();
+    dots.remove();
     addEntry(startResult.narration, 'narrator');
 });
 
@@ -139,7 +150,7 @@ rollButton.addEventListener('click', async () => {
     rollButton.disabled = true; // Disable the roll button while the roll is being processed
     const reason = playerInput.value; // Get the reason for the roll from the player input field
     playerInput.value = ''; // Clear the player input field after getting the reason
-
+    const dots = showWritingDots();
     const response = await fetch(`/api/campaigns/${currentCampaignId}/roll`, {
         method: 'POST',
         headers: {
@@ -148,6 +159,7 @@ rollButton.addEventListener('click', async () => {
         body: JSON.stringify({ reason })
     });
     const result = await response.json();
+    dots.remove(); // Remove the writing dots after receiving the result
     d20Face.textContent = result.roll_result; // Display the result of the d20 roll
     const li = document.createElement('li');
     li.textContent = `${reason || 'Roll'}: ${result.roll_result}`;
