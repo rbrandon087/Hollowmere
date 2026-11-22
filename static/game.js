@@ -13,7 +13,7 @@ const playerInput = document.getElementById('player-input'); // The player input
 const rollButton = document.getElementById('btn-roll'); // Button to roll the dice
 const d20Face = document.getElementById('d20-result'); // The element that displays the result of the d20 roll
 const rollHistory = document.getElementById('roll-history'); // The element that displays the roll history
-
+const leaveButton = document.getElementById('btn-quit'); // Button to leave the game
 
 // Event listener for the action form submission
 actionForm.addEventListener('submit', async (event) => {
@@ -151,8 +151,21 @@ rollButton.addEventListener('click', async () => {
     d20Face.textContent = result.roll_result; // Display the result of the d20 roll
     const li = document.createElement('li');
     li.textContent = `${reason || 'Roll'}: ${result.roll_result}`;
+    if (result.roll_result === 20) {
+        li.classList.add('is-crit');
+    } else if (result.roll_result === 1) {
+        li.classList.add('is-fumble');
+    }
     rollHistory.prepend(li);
     addEntry(`Rolled a d20: ${result.roll_result}`, 'roll');
     addEntry(result.narration, 'narrator');
     rollButton.disabled = false; // Re-enable the roll button after the roll is processed
 });
+
+// Event listener for the "Leave" button
+leaveButton.addEventListener('click', () => {
+    gameScreen.classList.remove('is-active');
+    titleScreen.classList.add('is-active');
+    storyLog.innerHTML = '';
+    currentCampaignId = null;
+})
