@@ -38,9 +38,12 @@
     </div>
 
     <nav class="title-menu" aria-label="Main menu">
-      <button class="btn btn--primary" id="btn-new-tale" type="button">Begin a new tale</button>
-      <button class="btn" id="btn-continue" type="button" disabled>Continue your tale</button>
-    </nav>
+  {% if not logged_in %}
+    <a class="btn btn--primary" href="/login">Sign in with Google</a>
+  {% endif %}
+  <button class="btn btn--primary" id="btn-new-tale" type="button">Begin a new tale</button>
+  <button class="btn" id="btn-continue" type="button" disabled>Continue your tale</button>
+</nav>
   </section>
 
 

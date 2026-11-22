@@ -1,6 +1,6 @@
 import psycopg # Postgres database adapter for Python
 import random # for generating random numbers and choices
-from flask import Flask, url_for, render_template, session, request, jsonify # Flask web framework for Python
+from flask import Flask, url_for, render_template, session, request, jsonify, redirect # Flask web framework for Python
 from openai import OpenAI
 import os # Operating system library for environment variables and file paths
 from dotenv import load_dotenv # loads environment variables from a .env file
@@ -195,7 +195,7 @@ oauth.register(
 def home():
     races = conn.execute("SELECT id, name, description, traits FROM races ORDER BY id").fetchall() # fetch all races from the database
     classes = conn.execute("SELECT id, name,description, hit_die FROM classes ORDER BY id").fetchall() # fetch all classes from the database
-    return render_template("index.html", races=races, classes=classes, backgrounds=BACKGROUND)
+    return render_template("index.html", races=races, classes=classes, backgrounds=BACKGROUND, logged_in="player_id" in session) # render the index.html template with the fetched races, classes, and backgrounds
 
 @app.route('/login')
 def login():
@@ -214,13 +214,13 @@ def auth():
         )
         player = conn.execute("SELECT * FROM players WHERE sub = %s", (user["sub"],)).fetchone() # fetch the newly inserted player row
     session["player_id"] = player[0] # store the player's ID in the session for later use
-    return f"Hello, {user['name']}! You're player #{player[0]}." # greet the user and show their player id
+    return redirect(url_for("home")) # redirect the user to the home page after successful login
 
 @app.route("/campaign") # route for the campaign page
 def campaign():
     player_id = session.get('player_id')
     if not player_id:
-            return "You must be logged in to view the campaign page."
+        return redirect(url_for("login")) # redirect to login if the player is not logged in
     campaigns = conn.execute("SELECT id, character_name, genre FROM campaigns WHERE player_id = %s", (player_id,)).fetchall() # fetch all campaigns for the logged-in player
     if not campaigns:
         return "You have not started any adventures yet."
@@ -230,7 +230,7 @@ def campaign():
 def create_campaign():
     player_id = session.get('player_id')
     if not player_id:
-        return "You must be logged in to create a campaign"
+        return jsonify({"error": "You must be logged in to create a campaign"}), 401
 
     data = request.get_json() # get the JSON data from the request body
     name = data.get("name") # get the campaign name from the JSON data
@@ -261,7 +261,7 @@ def create_campaign():
 def start_campaign(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
-        return "You must be logged in to start a campaign"
+        return jsonify({"error": "You must be logged in to start a campaign"}), 401
     if not own_campaigns(campaign_id, player_id):
         return jsonify({"error": "You do not own this campaign"}), 404
     
@@ -282,7 +282,7 @@ def start_campaign(campaign_id):
 def take_turn(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
-        return "You must be logged in to take a turn"
+        return jsonify({"error": "You must be logged in to take a turn"}), 401
     if not own_campaigns(campaign_id, player_id):
         return jsonify({"error": "You do not own this campaign"}), 404
 
@@ -295,7 +295,7 @@ def take_turn(campaign_id):
 def roll(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
-        return "You must be logged in to roll"
+        return jsonify({"error": "You must be logged in to roll"}), 401
     if not own_campaigns(campaign_id, player_id):
         return jsonify({"error": "You do not own this campaign"}), 404
 
@@ -316,7 +316,7 @@ def roll(campaign_id):
 def get_campaign(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
-        return "You must be logged in to view this campaign"
+        return jsonify({"error": "You must be logged in to view this campaign"}), 401
     
     campaign = conn.execute(
          "SELECT character_name, genre, race_id, class_id, strength, dexterity, constitution, intelligence, wisdom, charisma FROM campaigns WHERE id = %s AND player_id = %s",

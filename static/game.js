@@ -107,7 +107,10 @@ setupForm.addEventListener('submit', async (event) => {
         body: JSON.stringify(data)
     });
     console.log(response.status);
-
+if (response.status === 401) {
+    window.location.href = '/login'; // Redirect to login page if not logged in
+    return; // Stop further execution
+}
     const result = await response.json();// Parse the JSON response from the server
     console.log(result.campaign_id);
     currentCampaignId = result.campaign_id;
