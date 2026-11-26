@@ -42,7 +42,7 @@
     <a class="btn btn--primary" href="/login">Sign in with Google</a>
   {% endif %}
   <button class="btn btn--primary" id="btn-new-tale" type="button">Begin a new tale</button>
-  <button class="btn" id="btn-continue" type="button" disabled>Continue your tale</button>
+  <button class="btn" id="btn-continue" type="button" {% if not logged_in %}disabled{% endif %}>Continue your tale</button>
 </nav>
   </section>
 
@@ -143,6 +143,20 @@
         <button class="btn btn--primary" type="submit">Enter Hollowmere</button>
       </div>
     </form>
+  </section>
+
+
+  <!-- =========================================================
+       SCREEN: CONTINUE (list of saved adventures)
+       ========================================================= -->
+  <section class="screen setup-screen" id="screen-continue" aria-labelledby="continue-heading">
+    <div class="setup frame">
+      <h2 class="setup__heading" id="continue-heading">Continue your tale</h2>
+      <ul class="satchel" id="campaign-list"></ul>
+      <div class="setup__actions">
+        <button class="btn" id="btn-continue-back" type="button">Back</button>
+      </div>
+    </div>
   </section>
 
 

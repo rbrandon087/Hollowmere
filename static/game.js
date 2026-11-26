@@ -14,7 +14,9 @@ const rollButton = document.getElementById('btn-roll'); // Button to roll the di
 const d20Face = document.getElementById('d20-result'); // The element that displays the result of the d20 roll
 const rollHistory = document.getElementById('roll-history'); // The element that displays the roll history
 const leaveButton = document.getElementById('btn-quit'); // Button to leave the game
-
+const continueScreen = document.getElementById('screen-continue'); // The continue screen section
+const campaignList = document.getElementById('campaign-list'); // The element that displays the list of campaigns
+const continueBackButton = document.getElementById('btn-continue-back'); // Button to go back from the continue screen
 // Event listener for the action form submission
 actionForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -91,6 +93,23 @@ async function loadCharacterSheet() {
         const li = document.createElement('li');
         li.textContent = item;
         satchel.appendChild(li);
+    }
+}
+async function loadCampaign(id) {
+    currentCampaignId = id;
+    continueScreen.classList.remove('is-active');
+    gameScreen.classList.add('is-active');
+    storyLog.innerHTML = ''; // Clear the story log before loading the campaign
+    loadCharacterSheet();
+
+    const response = await fetch(`/api/campaigns/${currentCampaignId}/turns`);
+    const result = await response.json();
+    for (const turn of result.turns) {
+        if (turn.role === 'user') {
+            addEntry(turn.content, 'player');
+        } else {
+            addEntry(turn.content, 'narrator');
+        }
     }
 }
 
@@ -183,4 +202,28 @@ leaveButton.addEventListener('click', () => {
     titleScreen.classList.add('is-active');
     storyLog.innerHTML = '';
     currentCampaignId = null;
+})
+// Event listener for the "Continue" button
+continueButton.addEventListener('click', async () => {
+    titleScreen.classList.remove('is-active');
+    continueScreen.classList.add('is-active');
+
+    const response = await fetch('/api/campaigns');
+    const results = await response.json();
+
+    campaignList.innerHTML = ''; // Clear the campaign list before populating it
+    for (const campaign of results.campaigns) {
+        const li = document.createElement('li');
+        li.textContent = `${campaign.character_name} (${campaign.genre})`;
+        li.addEventListener('click', () => {
+            loadCampaign(campaign.id);
+        })
+        campaignList.appendChild(li);
+    }
+});
+
+// Event listener for the "Back" button on the continue screen
+continueBackButton.addEventListener('click', () => {
+    continueScreen.classList.remove('is-active');
+    titleScreen.classList.add('is-active');
 })
