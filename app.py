@@ -226,6 +226,26 @@ def campaign():
         return "You have not started any adventures yet."
     return render_template("campaigns.html", campaigns=campaigns) # display the campaigns for the logged-in player
 
+@app.route("/api/campaigns", methods=["GET"])
+def list_campaigns():
+    player_id = session.get('player_id')
+    if not player_id:
+        return jsonify({"error": "You must be logged in to view campaigns"}), 401
+
+    rows = conn.execute(
+        "SELECT id, character_name, genre FROM campaigns WHERE player_id = %s ORDER BY id DESC",
+        (player_id,),
+    ).fetchall()
+
+    campaigns = []
+    for row in rows:
+        campaigns.append({
+            "id": row[0],
+            "character_name": row[1],
+            "genre": row[2],
+        })
+    return jsonify({"campaigns": campaigns})
+
 @app.route("/api/campaigns", methods=["POST"])
 def create_campaign():
     player_id = session.get('player_id')
@@ -277,6 +297,27 @@ def start_campaign(campaign_id):
         (campaign_id, "assistant", response.output_text),
     )
     return jsonify({"narration": response.output_text})
+
+   @app.route("/api/campaigns/<int:campaign_id>/turns", methods=["GET"])
+def get_turns(campaign_id):
+    player_id = session.get('player_id')
+    if not player_id:
+        return jsonify({"error": "You must be logged in to view this story"}), 401
+    if not own_campaigns(campaign_id, player_id):
+        return jsonify({"error": "You do not own this campaign"}), 404
+
+    rows = conn.execute(
+        "SELECT role, content FROM turns WHERE campaign_id = %s ORDER BY id",
+        (campaign_id,),
+    ).fetchall()
+
+    turns = []
+    for row in rows:
+        turns.append({
+            "role": row[0],
+            "content": row[1],
+        })
+    return jsonify({"turns": turns})
 # Route to take a turn in the campaign
 @app.route("/api/campaigns/<int:campaign_id>/turns", methods=["POST"])
 def take_turn(campaign_id):
