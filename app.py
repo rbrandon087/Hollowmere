@@ -298,7 +298,7 @@ def start_campaign(campaign_id):
     )
     return jsonify({"narration": response.output_text})
 
-   @app.route("/api/campaigns/<int:campaign_id>/turns", methods=["GET"])
+@app.route("/api/campaigns/<int:campaign_id>/turns", methods=["GET"])
 def get_turns(campaign_id):
     player_id = session.get('player_id')
     if not player_id:
