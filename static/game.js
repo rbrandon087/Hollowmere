@@ -17,6 +17,9 @@ const leaveButton = document.getElementById('btn-quit'); // Button to leave the 
 const continueScreen = document.getElementById('screen-continue'); // The continue screen section
 const campaignList = document.getElementById('campaign-list'); // The element that displays the list of campaigns
 const continueBackButton = document.getElementById('btn-continue-back'); // Button to go back from the continue screen
+const helpButton = document.getElementById('btn-help'); // Button to show the help modal
+const guide = document.getElementById('how-to-play'); // The help modal element
+const guideCloseButton = document.getElementById('btn-guide-close'); // Button to close the help modal  
 // Event listener for the action form submission
 actionForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -227,3 +230,16 @@ continueBackButton.addEventListener('click', () => {
     continueScreen.classList.remove('is-active');
     titleScreen.classList.add('is-active');
 })
+
+helpButton.addEventListener('click', () => {
+    guide.showModal();
+});
+
+guideCloseButton.addEventListener('click', () => {
+    guide.close();
+});
+
+if (!localStorage.getItem('seenGuide')) {
+    guide.showModal();
+    localStorage.setItem('seenGuide', 'true');
+}

@@ -243,6 +243,32 @@
     </aside>
   </section>
 
+    <!-- =========================================================
+       HOW TO PLAY (pop-up guide for new players)
+       ========================================================= -->
+  <dialog class="guide frame" id="how-to-play" aria-labelledby="guide-heading">
+    <h2 class="setup__heading" id="guide-heading">How to Play</h2>
+
+    <h3 class="forge__heading">You are the hero</h3>
+    <p>An AI Dungeon Master tells the story and plays everyone else in the world. You decide what your character says and does.</p>
+
+    <h3 class="forge__heading">Taking a turn</h3>
+    <p>Type what you want to do in the box at the bottom and press <strong>Act</strong>. Be specific: "I search the desk for a key" works better than "I look around."</p>
+
+    <h3 class="forge__heading">Rolling the dice</h3>
+    <p>When the DM says <em>"Type roll to find out,"</em> type what you're attempting, then click the <strong>d20</strong> on your character sheet. A 1 is a disaster, 10 to 14 works with a catch, and a 20 is better than you hoped.</p>
+
+    <h3 class="forge__heading">Your character sheet</h3>
+    <p><strong>STR</strong> strength · <strong>DEX</strong> agility · <strong>CON</strong> toughness · <strong>INT</strong> knowledge · <strong>WIS</strong> awareness · <strong>CHA</strong> charm. 10 is average; higher makes those actions easier.</p>
+
+    <h3 class="forge__heading">Tips</h3>
+    <p>Ask the DM questions, talk to people, and explore. There's no wrong move. Your story saves every turn, so you can leave and continue anytime.</p>
+
+    <div class="setup__actions">
+      <button class="btn btn--primary" id="btn-guide-close" type="button">Begin</button>
+    </div>
+  </dialog>
+
   <script src="{{ url_for('static', filename='game.js') }}"></script>
 </body>
 </html>
